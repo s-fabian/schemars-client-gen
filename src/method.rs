@@ -67,4 +67,35 @@ impl FromStr for Method {
 }
 
 #[cfg(feature = "actix-web")]
-mod actix {}
+mod actix {
+    use super::{Method, MethodUnknown};
+    use actix_web::http::Method as ActixMethod;
+
+    impl TryFrom<ActixMethod> for Method {
+        type Error = MethodUnknown;
+
+        fn try_from(value: ActixMethod) -> Result<Self, Self::Error> {
+            if value == ActixMethod::OPTIONS {
+                Ok(Self::Options)
+            } else if value == ActixMethod::GET {
+                Ok(Self::Get)
+            } else if value == ActixMethod::POST {
+                Ok(Self::Post)
+            } else if value == ActixMethod::PUT {
+                Ok(Self::Put)
+            } else if value == ActixMethod::DELETE {
+                Ok(Self::Delete)
+            } else if value == ActixMethod::HEAD {
+                Ok(Self::Head)
+            } else if value == ActixMethod::TRACE {
+                Ok(Self::Trace)
+            } else if value == ActixMethod::CONNECT {
+                Ok(Self::Connect)
+            } else if value == ActixMethod::PATCH {
+                Ok(Self::Patch)
+            } else {
+                Err(MethodUnknown)
+            }
+        }
+    }
+}
