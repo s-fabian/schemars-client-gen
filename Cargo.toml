@@ -13,6 +13,7 @@ actix-web = { version = "4", optional = true }
 
 [features]
 actix-web = ["dep:actix-web"]
+client-gen = []
 
 [patch.crates-io]
 schemars = { git = "https://github.com/s-fabian/schemars" }
