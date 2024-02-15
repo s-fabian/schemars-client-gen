@@ -3,7 +3,7 @@ mod gen;
 mod method;
 mod types;
 
-pub use std::error::Error as StdError;
+pub(crate) use std::error::Error as StdError;
 
 #[cfg(feature = "client-gen")]
 pub use gen::generate;
