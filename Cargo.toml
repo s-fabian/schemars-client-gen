@@ -1,0 +1,18 @@
+[package]
+name = "schemars-client-gen"
+version = "0.8.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+schemars = { git = "https://github.com/s-fabian/schemars", features = ["bigdecimal04", "impl_json_schema", "uuid1", "chrono"] }
+schemars-to-zod = { git = "https://github.com/s-fabian/schemars-to-zod", features = ["pretty", "inner"] }
+actix-web = { version = "4.5", optional = true }
+
+[features]
+actix-web = ["dep:actix-web"]
+
+[patch.crates-io]
+schemars = { git = "https://github.com/s-fabian/schemars" }
