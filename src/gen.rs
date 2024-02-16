@@ -184,10 +184,6 @@ export namespace client {{
             )
         };
 
-        if !comment.is_empty() {
-            eprintln!("comment = {comment}");
-        }
-
         if v.res.is_websocket() {
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): \
