@@ -110,9 +110,11 @@ class PromiseWrapper<T> implements PromiseLike<T> {
                     this.isDebug && console.error(e);
                     let error = e instanceof Error ? e : new Error(e);
 
-                    if (this.isSilent) return;
                     await (this.network_error_callback &&
                         this.network_error_callback(error));
+
+                    if (this.isSilent) return;
+
                     await (options.onNetworkError && options.onNetworkError(error));
                 },
             )
