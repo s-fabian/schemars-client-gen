@@ -1,6 +1,9 @@
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
+
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING-KEBAB-CASE")]
@@ -68,8 +71,9 @@ impl FromStr for Method {
 
 #[cfg(feature = "actix-web")]
 mod actix {
-    use super::{Method, MethodUnknown};
     use actix_web::http::Method as ActixMethod;
+
+    use super::{Method, MethodUnknown};
 
     impl TryFrom<ActixMethod> for Method {
         type Error = MethodUnknown;

@@ -2,8 +2,10 @@ use std::collections::BTreeMap;
 
 use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
 
-use crate::types::{Kind, RequestInfo, Requests, Tag};
-use crate::StdError;
+use crate::{
+    types::{Kind, RequestInfo, Requests, Tag},
+    StdError,
+};
 
 fn first_upper(s: impl AsRef<str>) -> String {
     let mut s: Vec<char> = s.as_ref().chars().collect();
@@ -82,17 +84,17 @@ export namespace client {{
         let struct_name = first_upper(&name);
 
         match (&v.req, v.is_params) {
-            (Kind::None, _) => {}
+            (Kind::None, _) => {},
             (Kind::Any, true) => {
                 s.push_str(&format!(
                     "    export type {struct_name}Params = Record<string, string>;\n\n"
                 ));
-            }
+            },
             (Kind::Any, false) => {
                 s.push_str(&format!(
                     "    type {struct_name}Req = Blob | FormData | string;\n\n"
                 ));
-            }
+            },
             (Kind::Schema(schema), true) => {
                 let zod = i_parser.parse_schema_object(&schema.schema)?;
 
@@ -101,7 +103,7 @@ export namespace client {{
                     "    export type {struct_name}Params = z.input<typeof \
                      {name}ParamsSchema>;\n\n"
                 ));
-            }
+            },
             (Kind::Schema(schema), false) => {
                 let zod = i_parser.parse_schema_object(&schema.schema)?;
                 s.push_str(&format!("    const {name}ReqSchema = {};\n", zod));
@@ -109,13 +111,13 @@ export namespace client {{
                     "    export type {struct_name}Req = z.input<typeof \
                      {name}ReqSchema>;\n\n"
                 ));
-            }
+            },
             (Kind::Websocket { .. }, _) => unreachable!(),
         }
 
         match &v.res {
-            Kind::None => {}
-            Kind::Any => {}
+            Kind::None => {},
+            Kind::Any => {},
             Kind::Schema(schema) => {
                 let zod = o_parser.parse_schema_object(&schema.schema)?;
 
@@ -124,7 +126,7 @@ export namespace client {{
                     "    export type {struct_name}Res = z.output<typeof \
                      {name}ResSchema>;\n\n"
                 ));
-            }
+            },
             Kind::Websocket {
                 client_msg,
                 server_msg,
@@ -155,7 +157,7 @@ export namespace client {{
                      WebsocketWrapper<{struct_name}ClientMsg, \
                      {struct_name}ServerMsg>;\n\n"
                 ));
-            }
+            },
         }
 
         if let Some((path, method, tag)) = &v.deprecated {
@@ -166,15 +168,36 @@ export namespace client {{
             ));
         }
 
+        const TABS: &'static str = "    ";
+
+        let comment = if v.error_codes.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "{TABS}/**\n{TABS} * Error responses:\n{TABS} *\n{TABS} * {}\n{TABS} \
+                 */\n",
+                v.error_codes
+                    .iter()
+                    .map(|(code, info)| { format!("{code}: {info}") })
+                    .collect::<Vec<String>>()
+                    .join(&format!("\n{TABS} *\n{TABS} * ")),
+            )
+        };
+
+        if !comment.is_empty() {
+            eprintln!("comment = {comment}");
+        }
+
         if v.res.is_websocket() {
             s.push_str(&format!(
-                "    export function {name}({req_params}): {struct_name}Websocket {{
+                "{comment}    export function {name}({req_params}): \
+                 {struct_name}Websocket {{
         const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://'
 
         const wsBaseUrl = (!options.baseUrl || options.baseUrl.startsWith('/'))
             ? `${{protocol}}${{location.host}}${{baseUrl}}`
-            : (protocol + options.baseUrl.replace(/^https:\\/\\//, '').replace(/^http:\\/\\//, \
-                 ''))
+            : (protocol + options.baseUrl.replace(/^https:\\/\\//, \
+                 '').replace(/^http:\\/\\//, ''))
 
         return new WebsocketWrapper(
             () => new WebSocket(
@@ -203,8 +226,8 @@ export namespace client {{
             ));
         } else {
             s.push_str(&format!(
-                "    export function {name}({req_json}{req_params}init: RequestInit = \
-                 {{}}): PromiseWrapper<{res_name}> {{
+                "{comment}    export function {name}({req_json}{req_params}init: \
+                 RequestInit = {{}}): PromiseWrapper<{res_name}> {{
         return new PromiseWrapper(
             fetch(
                 options.baseUrl + '{path}'{params_suffix},
@@ -255,21 +278,24 @@ export namespace client {{
                     match &v.req {
                         Kind::None => "null".to_string(),
                         Kind::Any => "req".to_string(),
-                        Kind::Schema(_) => format!("JSON.stringify({name}ReqSchema.parse(req))"),
+                        Kind::Schema(_) =>
+                            format!("JSON.stringify({name}ReqSchema.parse(req))"),
                         Kind::Websocket { .. } => unreachable!(),
                     }
                 },
-                headers_addition = if v.is_params == false && matches!(v.req, Kind::Schema(_)) {
-                    "\nheaders: jsonContentTypeHeader(init.headers as \
-                         RepresentsHeader, options.globalInit.headers as RepresentsHeader),"
+                headers_addition = if v.is_params == false
+                    && matches!(v.req, Kind::Schema(_))
+                {
+                    "\nheaders: jsonContentTypeHeader(init.headers as RepresentsHeader, \
+                     options.globalInit.headers as RepresentsHeader),"
                 } else {
                     ""
                 },
                 // make the response
                 res = match &v.res {
                     Kind::None => ".then(res => res.ok ? ok(res) : err(res))".to_string(),
-                    Kind::Any =>
-                        ".then(res => res.ok ? res.text().then(ok) : err(res))".to_string(),
+                    Kind::Any => ".then(res => res.ok ? res.text().then(ok) : err(res))"
+                        .to_string(),
                     Kind::Schema(_) => format!(
                         ".then(res => res.ok ? \
                          res.json().then({name}ResSchema.parse).then(ok) : err(res))"

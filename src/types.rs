@@ -1,12 +1,13 @@
 use std::any::Any;
 
-use crate::method::Method;
 use schemars::{
     gen::{SchemaGenerator, SchemaSettings},
     schema::RootSchema,
     JsonSchema,
 };
 use serde::{Deserialize, Serialize, Serializer};
+
+use crate::method::Method;
 
 #[derive(Debug, Clone, Default, JsonSchema, Serialize, Deserialize)]
 pub enum Kind {
@@ -25,9 +26,7 @@ impl Kind {
         matches!(self, Kind::Any | Kind::Schema(_) | Kind::Websocket { .. })
     }
 
-    pub fn is_websocket(&self) -> bool {
-        matches!(self, Kind::Websocket { .. })
-    }
+    pub fn is_websocket(&self) -> bool { matches!(self, Kind::Websocket { .. }) }
 
     // fn is_none(&self) -> bool { matches!(self, Kind::None) }
 }
@@ -53,16 +52,12 @@ impl Tag {
 }
 
 fn to_string<S>(x: impl ToString, s: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
+where S: Serializer {
     s.serialize_str(&x.to_string())
 }
 
 fn option_some<S>(x: &Option<impl Any>, s: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
+where S: Serializer {
     s.serialize_bool(x.is_some())
 }
 
@@ -77,12 +72,14 @@ pub struct RequestInfo {
     #[serde(serialize_with = "option_some")]
     pub deprecated: Option<(&'static str, Method, Tag)>,
     pub is_params: bool,
+    pub error_codes: Vec<(u16, &'static str)>,
 }
 
 pub fn generator() -> SchemaGenerator {
     let mut settings = SchemaSettings::default();
     settings.inline_subschemas = true;
-    settings.meta_schema = Some("http://json-schema.org/draft-03/hyper-schema".to_string());
+    settings.meta_schema =
+        Some("http://json-schema.org/draft-03/hyper-schema".to_string());
     SchemaGenerator::new(settings)
 }
 
@@ -96,7 +93,13 @@ impl RequestInfo {
             req: Kind::None,
             res: Kind::None,
             deprecated: None,
+            error_codes: Vec::new(),
         }
+    }
+
+    pub fn with_error(mut self, code: u16, desc: &'static str) -> Self {
+        self.error_codes.push((code, desc));
+        self
     }
 
     pub fn with_req_schema<T: JsonSchema>(mut self) -> Self {
