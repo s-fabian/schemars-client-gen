@@ -47,6 +47,7 @@ impl Tag {
         match self {
             Tag::User => "user",
             Tag::Login => "login",
+            Tag::Company => "company",
             Tag::Other(other) => other,
         }
     }
