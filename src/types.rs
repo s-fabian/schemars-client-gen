@@ -39,6 +39,7 @@ impl Kind {
 pub enum Tag {
     Login,
     User,
+    Company,
     Other(&'static str),
 }
 impl Tag {
