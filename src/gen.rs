@@ -117,7 +117,11 @@ export namespace client {{
 
         match &v.res {
             Kind::None => {},
-            Kind::Any => {},
+            Kind::Any => {
+                s.push_str(&format!(
+                    "    export type {struct_name}Res = unknown;\n\n"
+                ));
+            },
             Kind::Schema(schema) => {
                 let zod = o_parser.parse_schema_object(&schema.schema)?;
 
