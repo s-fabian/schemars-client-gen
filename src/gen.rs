@@ -191,7 +191,7 @@ export namespace client {{
         const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://'
 
         const wsBaseUrl = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            ? `${{protocol}}${{location.host}}${{baseUrl}}`
+            ? `${{protocol}}${{location.host}}${{options.baseUrl}}`
             : (protocol + options.baseUrl.replace(/^https:\\/\\//, \
                  '').replace(/^http:\\/\\//, ''))
 
