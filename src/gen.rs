@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
 
 use crate::{
-    types::{Kind, RequestInfo, Requests, Tag},
+    types::{Kind, RequestInfo, Requests},
     StdError,
 };
 
@@ -17,14 +17,12 @@ fn make_name(info: &RequestInfo) -> String {
     make_name_raw(info.method.as_str(), info.path, info.tag)
 }
 
-fn make_name_raw(method: &str, path: &str, tag: Tag) -> String {
+fn make_name_raw(method: &str, path: &str, tag: &'static str) -> String {
     let start = method.to_string().to_lowercase();
 
     let path = path.strip_prefix("/").unwrap_or(path);
     let path = path.strip_prefix("api/").unwrap_or(path);
-    let path = path
-        .strip_prefix(&format!("{}/", tag.as_str()))
-        .unwrap_or(path);
+    let path = path.strip_prefix(&format!("{}/", tag)).unwrap_or(path);
 
     let path = path
         .split(&['-', '/'][..])
@@ -118,9 +116,7 @@ export namespace client {{
         match &v.res {
             Kind::None => {},
             Kind::Any => {
-                s.push_str(&format!(
-                    "    export type {struct_name}Res = unknown;\n\n"
-                ));
+                s.push_str(&format!("    export type {struct_name}Res = unknown;\n\n"));
             },
             Kind::Schema(schema) => {
                 let zod = o_parser.parse_schema_object(&schema.schema)?;
@@ -305,8 +301,7 @@ export namespace client {{
             ));
         }
 
-        let tag = v.tag.as_str();
-        namespaces.entry(tag).or_default().push(s);
+        namespaces.entry(v.tag).or_default().push(s);
     }
 
     out.push_str(
