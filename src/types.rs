@@ -35,6 +35,12 @@ pub trait Tag {
     fn tag_name(&self) -> &'static str;
 }
 
+impl Tag for &'static str {
+    fn tag_name(&self) -> &'static str {
+        self
+    }
+}
+
 fn to_string<S>(x: impl ToString, s: S) -> Result<S::Ok, S::Error>
 where S: Serializer {
     s.serialize_str(&x.to_string())
