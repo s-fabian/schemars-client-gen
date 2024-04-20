@@ -31,26 +31,8 @@ impl Kind {
     // fn is_none(&self) -> bool { matches!(self, Kind::None) }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-#[serde(untagged)]
-#[allow(dead_code)]
-#[non_exhaustive]
-pub enum Tag {
-    Login,
-    User,
-    Company,
-    Other(&'static str),
-}
-impl Tag {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Tag::User => "user",
-            Tag::Login => "login",
-            Tag::Company => "company",
-            Tag::Other(other) => other,
-        }
-    }
+pub trait Tag {
+    fn tag_name(&self) -> &'static str;
 }
 
 fn to_string<S>(x: impl ToString, s: S) -> Result<S::Ok, S::Error>
@@ -68,11 +50,11 @@ pub struct RequestInfo {
     pub path: &'static str,
     #[serde(serialize_with = "to_string")]
     pub method: Method,
-    pub tag: Tag,
+    pub tag: &'static str,
     pub req: Kind,
     pub res: Kind,
     #[serde(serialize_with = "option_some")]
-    pub deprecated: Option<(&'static str, Method, Tag)>,
+    pub deprecated: Option<(&'static str, Method, &'static str)>,
     pub is_params: bool,
     pub error_codes: Vec<(u16, &'static str)>,
 }
@@ -86,12 +68,12 @@ pub fn generator() -> SchemaGenerator {
 }
 
 impl RequestInfo {
-    pub fn new(path: &'static str, method: Method, tag: Tag) -> RequestInfo {
+    pub fn new(path: &'static str, method: Method, tag: impl Tag) -> RequestInfo {
         RequestInfo {
             is_params: matches!(method, Method::Get | Method::Head | Method::Delete),
             path,
             method,
-            tag,
+            tag: tag.tag_name(),
             req: Kind::None,
             res: Kind::None,
             deprecated: None,
