@@ -25,18 +25,23 @@ mod binary {
     #[command(version, about, long_about = None)]
     struct Args {
         /// The input json file to generate the client from.
-        /// If no file is provided, it is read from stdin
+        /// If no file is provided, it is read from stdin.
         #[arg(short, long)]
         file: Option<PathBuf>,
 
         /// The output file to generate the client into.
-        /// If no file is provided, it is output to stdout
+        /// If no file is provided, it is output to stdout.
+        /// Is ignored when test_only is set.
         #[arg(short, long)]
         output_file: Option<PathBuf>,
 
-        /// If the input contains a "wrapper" object
-        #[arg(short, long, default_value_t = true)]
-        wrapper: bool,
+        /// If the input contains does not contain "wrapper" object
+        #[arg(short, long, default_value_t = false)]
+        plain: bool,
+
+        /// If the input should only be tested
+        #[arg(short, long, default_value_t = false)]
+        test_only: bool,
     }
 
     pub(super) fn main() -> Result<(), Box<dyn StdError>> {
@@ -52,9 +57,11 @@ mod binary {
             }
         }
 
-        if let Some(ref file) = args.output_file {
-            if file.exists() && !file.is_file() {
-                return Err(String::from("Provided output path is not a file").into());
+        if !args.test_only {
+            if let Some(ref file) = args.output_file {
+                if file.exists() && !file.is_file() {
+                    return Err(String::from("Provided output path is not a file").into());
+                }
             }
         }
 
@@ -69,12 +76,16 @@ mod binary {
             },
         };
 
-        let json: Vec<RequestInfo> = match args.wrapper {
-            true => {
+        let json: Vec<RequestInfo> = match args.plain {
+            true => serde_json::from_str(&input)?,
+            false => {
                 let json: Requests = serde_json::from_str(&input)?;
                 json.requests
             },
-            false => serde_json::from_str(&input)?,
+        };
+
+        if args.test_only {
+            return Ok(());
         };
 
         let out = generate(Requests { requests: json })?;

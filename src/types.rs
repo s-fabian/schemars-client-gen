@@ -46,6 +46,7 @@ pub struct RequestInfo {
     pub res: Kind,
     pub deprecated: Deprecated,
     pub is_params: bool,
+    #[serde(default)]
     pub error_codes: Vec<(u16, String)>,
 }
 

@@ -2,10 +2,11 @@ use std::collections::BTreeMap;
 
 use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
 
+use std::error::Error as StdError;
+
 use crate::{
     types::{Kind, RequestInfo, Requests},
     Deprecated,
-    StdError,
 };
 
 fn first_upper(s: impl AsRef<str>) -> String {
@@ -164,6 +165,8 @@ export namespace client {{
             s.push_str(&format!(
                 "    /** @deprecated Please use {{@link {new}}} instead */\n",
             ));
+        } else if matches!(&v.deprecated, &Deprecated::Simple(true)) {
+            s.push_str("    /** @deprecated */\n");
         }
 
         const TABS: &str = "    ";
