@@ -27,7 +27,7 @@ fn make_name_raw(method: String, path: String, tag: String) -> String {
     let path = path.strip_prefix(&format!("{}/", tag)).unwrap_or(path);
 
     let path = path
-        .split(&['-', '/'][..])
+        .split(&['-', '/', '_'][..])
         .map(str::to_lowercase)
         .map(first_upper)
         .collect::<Vec<String>>()
