@@ -1,13 +1,11 @@
-use std::any::Any;
-
 use schemars::{
     gen::{SchemaGenerator, SchemaSettings},
     schema::RootSchema,
     JsonSchema,
 };
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
-use crate::method::Method;
+use crate::{deprecated::Deprecated, method::Method};
 
 #[derive(Debug, Clone, Default, JsonSchema, Serialize, Deserialize)]
 pub enum Kind {
@@ -36,33 +34,19 @@ pub trait Tag {
 }
 
 impl Tag for &'static str {
-    fn tag_name(&self) -> &'static str {
-        self
-    }
+    fn tag_name(&self) -> &'static str { self }
 }
 
-fn to_string<S>(x: impl ToString, s: S) -> Result<S::Ok, S::Error>
-where S: Serializer {
-    s.serialize_str(&x.to_string())
-}
-
-fn option_some<S>(x: &Option<impl Any>, s: S) -> Result<S::Ok, S::Error>
-where S: Serializer {
-    s.serialize_bool(x.is_some())
-}
-
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestInfo {
-    pub path: &'static str,
-    #[serde(serialize_with = "to_string")]
+    pub path: String,
     pub method: Method,
-    pub tag: &'static str,
+    pub tag: String,
     pub req: Kind,
     pub res: Kind,
-    #[serde(serialize_with = "option_some")]
-    pub deprecated: Option<(&'static str, Method, &'static str)>,
+    pub deprecated: Deprecated,
     pub is_params: bool,
-    pub error_codes: Vec<(u16, &'static str)>,
+    pub error_codes: Vec<(u16, String)>,
 }
 
 pub fn generator() -> SchemaGenerator {
@@ -77,18 +61,18 @@ impl RequestInfo {
     pub fn new(path: &'static str, method: Method, tag: impl Tag) -> RequestInfo {
         RequestInfo {
             is_params: matches!(method, Method::Get | Method::Head | Method::Delete),
-            path,
+            path: path.to_string(),
             method,
-            tag: tag.tag_name(),
+            tag: tag.tag_name().to_string(),
             req: Kind::None,
             res: Kind::None,
-            deprecated: None,
+            deprecated: Deprecated::default(),
             error_codes: Vec::new(),
         }
     }
 
     pub fn with_error(mut self, code: u16, desc: &'static str) -> Self {
-        self.error_codes.push((code, desc));
+        self.error_codes.push((code, desc.to_string()));
         self
     }
 
@@ -135,16 +119,20 @@ impl RequestInfo {
     }
 
     pub fn with_deprecation_note(mut self, new_route: &RequestInfo) -> Self {
-        if self.deprecated.is_some() {
+        if self.deprecated.is() {
             panic!("RequestInfo already has a response schema");
         }
 
-        self.deprecated = Some((new_route.path, new_route.method.clone(), new_route.tag));
+        self.deprecated = Deprecated::WithInfo(
+            new_route.path.clone(),
+            new_route.method,
+            new_route.tag.clone(),
+        );
         self
     }
 }
 
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Requests {
     pub requests: Vec<RequestInfo>,
 }

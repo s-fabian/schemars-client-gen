@@ -4,6 +4,7 @@ use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
 
 use crate::{
     types::{Kind, RequestInfo, Requests},
+    Deprecated,
     StdError,
 };
 
@@ -14,13 +15,13 @@ fn first_upper(s: impl AsRef<str>) -> String {
 }
 
 fn make_name(info: &RequestInfo) -> String {
-    make_name_raw(info.method.as_str(), info.path, info.tag)
+    make_name_raw(info.method.to_string(), info.path.clone(), info.tag.clone())
 }
 
-fn make_name_raw(method: &str, path: &str, tag: &'static str) -> String {
+fn make_name_raw(method: String, path: String, tag: String) -> String {
     let start = method.to_string().to_lowercase();
 
-    let path = path.strip_prefix("/").unwrap_or(path);
+    let path = path.strip_prefix('/').unwrap_or(&path);
     let path = path.strip_prefix("api/").unwrap_or(path);
     let path = path.strip_prefix(&format!("{}/", tag)).unwrap_or(path);
 
@@ -38,11 +39,7 @@ fn format_js(js: &str) -> Result<String, Box<dyn StdError>> {
     config.line_width = 90;
     config.indent_width = 4;
 
-    Ok(schemars_to_zod::pretty::format_js(
-        js,
-        "client.ts",
-        &config,
-    )?)
+    schemars_to_zod::pretty::format_js(js, "client.ts", &config)
 }
 
 pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdError>> {
@@ -160,15 +157,16 @@ export namespace client {{
             },
         }
 
-        if let Some((path, method, tag)) = &v.deprecated {
-            let new = make_name_raw(method.as_str(), path, *tag);
+        if let Deprecated::WithInfo(path, method, tag) = &v.deprecated {
+            let new =
+                make_name_raw(method.to_string(), path.to_string(), tag.to_string());
 
             s.push_str(&format!(
                 "    /** @deprecated Please use {{@link {new}}} instead */\n",
             ));
         }
 
-        const TABS: &'static str = "    ";
+        const TABS: &str = "    ";
 
         let comment = if v.error_codes.is_empty() {
             String::new()
@@ -279,9 +277,7 @@ export namespace client {{
                         Kind::Websocket { .. } => unreachable!(),
                     }
                 },
-                headers_addition = if v.is_params == false
-                    && matches!(v.req, Kind::Schema(_))
-                {
+                headers_addition = if !v.is_params && matches!(v.req, Kind::Schema(_)) {
                     "\nheaders: jsonContentTypeHeader(init.headers as RepresentsHeader, \
                      options.globalInit.headers as RepresentsHeader),"
                 } else {
@@ -301,7 +297,7 @@ export namespace client {{
             ));
         }
 
-        namespaces.entry(v.tag).or_default().push(s);
+        namespaces.entry(&v.tag).or_default().push(s);
     }
 
     out.push_str(
@@ -317,7 +313,7 @@ export namespace client {{
             .join("\n\n"),
     );
 
-    out.push_str("}");
+    out.push('}');
 
     format_js(&out)
 }

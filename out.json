@@ -1,0 +1,1350 @@
+{
+  "requests": [
+    {
+      "path": "/api/login/session-id",
+      "method": "POST",
+      "tag": "login",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["email", "password"],
+          "properties": {
+            "email": { "type": "string" },
+            "password": { "type": "string" }
+          }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["sessionId"],
+          "properties": { "sessionId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/login/session-id",
+      "method": "DELETE",
+      "tag": "login",
+      "req": "None",
+      "res": "None",
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/login/password",
+      "method": "PUT",
+      "tag": "login",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["email", "password"],
+          "properties": {
+            "email": { "type": "string" },
+            "password": { "type": "string" }
+          }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["pendingId"],
+          "properties": { "pendingId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/login/pending/password",
+      "method": "PUT",
+      "tag": "login",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["code", "pendingId"],
+          "properties": {
+            "code": { "type": "string" },
+            "pendingId": { "type": "string", "format": "uuid" }
+          }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["sessionId"],
+          "properties": { "sessionId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/working-hour",
+      "method": "PUT",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["start"],
+          "properties": {
+            "hourId": { "type": ["string", "null"], "format": "uuid" },
+            "info": { "type": ["string", "null"] },
+            "minutes": {
+              "type": ["integer", "null"],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "start": { "type": "string", "format": "date-time" },
+            "taskId": { "type": ["string", "null"], "format": "uuid" }
+          }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["hourId"],
+          "properties": { "hourId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "deprecated": true,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/board",
+      "method": "POST",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "emoji": { "type": ["string", "null"], "maxLength": 4 },
+            "name": { "type": "string", "maxLength": 250, "minLength": 1 }
+          }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["boardId"],
+          "properties": { "boardId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/user",
+      "method": "PATCH",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["color", "nickname"],
+          "properties": {
+            "color": { "type": "string", "pattern": "^#?([0-9a-fA-F]{3}){1,2}$" },
+            "nickname": { "type": "string", "maxLength": 250, "minLength": 1 }
+          }
+        }
+      },
+      "res": "None",
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/working-hour",
+      "method": "DELETE",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["hour_id"],
+          "properties": { "hour_id": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "res": "None",
+      "deprecated": true,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/user",
+      "method": "GET",
+      "tag": "user",
+      "req": "None",
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["admin", "color", "email", "name", "role", "userId"],
+          "properties": {
+            "admin": { "type": "boolean" },
+            "color": { "type": "string", "pattern": "^#?([0-9a-fA-F]{3}){1,2}$" },
+            "email": { "type": "string" },
+            "name": { "type": "string" },
+            "role": { "type": "string", "enum": ["adminMan", "employeeMan"] },
+            "userId": { "type": "string", "format": "uuid" }
+          }
+        }
+      },
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/working-hours",
+      "method": "GET",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["year"],
+          "properties": { "year": { "type": "integer", "format": "int32" } }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["workingHours"],
+          "properties": {
+            "workingHours": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["hourId", "start"],
+                "properties": {
+                  "hourId": { "type": "string", "format": "uuid" },
+                  "info": { "type": ["string", "null"] },
+                  "minutes": {
+                    "type": ["integer", "null"],
+                    "format": "uint32",
+                    "minimum": 0.0
+                  },
+                  "start": { "type": "string", "format": "partial-date-time" },
+                  "task": {
+                    "type": ["object", "null"],
+                    "required": ["boardId", "columnId", "name", "taskId"],
+                    "properties": {
+                      "boardId": { "type": "string", "format": "uuid" },
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "description": { "type": ["string", "null"] },
+                      "name": { "type": "string" },
+                      "taskId": { "type": "string", "format": "uuid" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "deprecated": true,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/task/working-hours",
+      "method": "GET",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["taskId"],
+          "properties": { "taskId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["workingHours"],
+          "properties": {
+            "workingHours": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["hourId", "start"],
+                "properties": {
+                  "hourId": { "type": "string", "format": "uuid" },
+                  "info": { "type": ["string", "null"] },
+                  "minutes": {
+                    "type": ["integer", "null"],
+                    "format": "uint32",
+                    "minimum": 0.0
+                  },
+                  "start": { "type": "string", "format": "partial-date-time" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/boards",
+      "method": "GET",
+      "tag": "user",
+      "req": "None",
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["boards"],
+          "properties": {
+            "boards": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["boardId", "emoji", "name"],
+                "properties": {
+                  "boardId": { "type": "string", "format": "uuid" },
+                  "emoji": { "type": "string" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/board",
+      "method": "GET",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["boardId"],
+          "properties": { "boardId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "res": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": [
+            "columns",
+            "info",
+            "messages",
+            "messagesTotal",
+            "userAccess"
+          ],
+          "properties": {
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["info", "tasks", "workingMinutesTotal"],
+                "properties": {
+                  "info": {
+                    "type": "object",
+                    "required": ["columnId", "name"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "emoji": { "type": ["string", "null"] },
+                      "limitDays": {
+                        "type": ["integer", "null"],
+                        "format": "uint16",
+                        "minimum": 0.0
+                      },
+                      "name": { "type": "string" }
+                    }
+                  },
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["info", "workingHours"],
+                      "properties": {
+                        "assignedId": {
+                          "type": ["string", "null"],
+                          "format": "uuid"
+                        },
+                        "info": {
+                          "type": "object",
+                          "required": [
+                            "columnId",
+                            "lastChanged",
+                            "name",
+                            "taskId"
+                          ],
+                          "properties": {
+                            "assignedUserId": {
+                              "type": ["string", "null"],
+                              "format": "uuid"
+                            },
+                            "columnId": { "type": "string", "format": "uuid" },
+                            "description": { "type": ["string", "null"] },
+                            "lastChanged": {
+                              "type": "string",
+                              "format": "partial-date-time"
+                            },
+                            "name": { "type": "string" },
+                            "taskId": { "type": "string", "format": "uuid" }
+                          }
+                        },
+                        "workingHours": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": ["hourId", "start", "taskId", "userId"],
+                            "properties": {
+                              "hourId": { "type": "string", "format": "uuid" },
+                              "info": { "type": ["string", "null"] },
+                              "minutes": {
+                                "type": ["integer", "null"],
+                                "format": "uint32",
+                                "minimum": 0.0
+                              },
+                              "start": {
+                                "type": "string",
+                                "format": "partial-date-time"
+                              },
+                              "taskId": { "type": "string", "format": "uuid" },
+                              "userId": { "type": "string", "format": "uuid" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "workingMinutesTotal": {
+                    "type": "integer",
+                    "format": "uint64",
+                    "minimum": 0.0
+                  }
+                }
+              }
+            },
+            "info": {
+              "type": "object",
+              "required": ["boardId", "name"],
+              "properties": {
+                "boardId": { "type": "string", "format": "uuid" },
+                "emoji": { "type": ["string", "null"] },
+                "name": { "type": "string" }
+              }
+            },
+            "messages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["authorId", "createdAt", "messageId", "text"],
+                "properties": {
+                  "authorId": { "type": "string", "format": "uuid" },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "partial-date-time"
+                  },
+                  "editedAt": {
+                    "type": ["string", "null"],
+                    "format": "partial-date-time"
+                  },
+                  "messageId": { "type": "string", "format": "uuid" },
+                  "text": { "type": "string" }
+                }
+              }
+            },
+            "messagesTotal": { "type": "integer", "format": "int32" },
+            "userAccess": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["admin", "color", "email", "name", "role", "userId"],
+                "properties": {
+                  "admin": { "type": "boolean" },
+                  "color": {
+                    "type": "string",
+                    "pattern": "^#?([0-9a-fA-F]{3}){1,2}$"
+                  },
+                  "email": { "type": "string" },
+                  "name": { "type": "string" },
+                  "nickname": { "type": ["string", "null"] },
+                  "role": {
+                    "type": "string",
+                    "enum": ["adminMan", "employeeMan"]
+                  },
+                  "userId": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/user/board/events",
+      "method": "GET",
+      "tag": "user",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["boardId"],
+          "properties": { "boardId": { "type": "string", "format": "uuid" } }
+        }
+      },
+      "res": {
+        "Websocket": {
+          "client_msg": {
+            "$schema": "http://json-schema.org/draft-03/hyper-schema",
+            "type": "object",
+            "required": ["data"],
+            "properties": {
+              "data": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": ["kind", "message"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["createMessage"] },
+                      "message": { "type": "string" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "message", "messageId"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["updateMessage"] },
+                      "message": { "type": "string" },
+                      "messageId": { "type": "string", "format": "uuid" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["board", "kind"],
+                    "properties": {
+                      "board": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                          "emoji": { "type": ["string", "null"], "maxLength": 4 },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["updateBoard"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["column", "kind"],
+                    "properties": {
+                      "column": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                          "emoji": { "type": ["string", "null"], "maxLength": 4 },
+                          "limitDays": {
+                            "type": ["integer", "null"],
+                            "format": "uint16",
+                            "minimum": 0.0
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["createColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["column", "kind"],
+                    "properties": {
+                      "column": {
+                        "type": "object",
+                        "required": ["columnId", "name"],
+                        "properties": {
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "emoji": { "type": ["string", "null"], "maxLength": 4 },
+                          "limitDays": {
+                            "type": ["integer", "null"],
+                            "format": "uint16",
+                            "minimum": 0.0
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["updateColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "kind"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "kind": { "type": "string", "enum": ["deleteColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "index", "kind"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "index": {
+                        "type": "integer",
+                        "format": "uint8",
+                        "minimum": 0.0
+                      },
+                      "kind": { "type": "string", "enum": ["moveColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "task"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["createTask"] },
+                      "task": {
+                        "type": "object",
+                        "required": ["columnId", "name"],
+                        "properties": {
+                          "assignedUserId": {
+                            "type": ["string", "null"],
+                            "format": "uuid"
+                          },
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "description": { "type": ["string", "null"] },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "task"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["updateTask"] },
+                      "task": {
+                        "type": "object",
+                        "required": ["name", "taskId"],
+                        "properties": {
+                          "assignedUserId": {
+                            "type": ["string", "null"],
+                            "format": "uuid"
+                          },
+                          "description": { "type": ["string", "null"] },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          },
+                          "taskId": { "type": "string", "format": "uuid" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "taskId"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["deleteTask"] },
+                      "taskId": { "type": "string", "format": "uuid" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "index", "kind", "taskId"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "index": {
+                        "type": "integer",
+                        "format": "uint8",
+                        "minimum": 0.0
+                      },
+                      "kind": { "type": "string", "enum": ["moveTask"] },
+                      "taskId": { "type": "string", "format": "uuid" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["cursor", "kind", "taskId", "updates"],
+                    "properties": {
+                      "cursor": {
+                        "type": "object",
+                        "properties": {
+                          "end": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          },
+                          "start": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          }
+                        }
+                      },
+                      "description": { "type": ["string", "null"] },
+                      "kind": { "type": "string", "enum": ["descriptionUpdate"] },
+                      "taskId": { "type": "string", "format": "uuid" },
+                      "updates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["start"],
+                          "properties": {
+                            "count": {
+                              "type": ["integer", "null"],
+                              "format": "uint32",
+                              "minimum": 0.0
+                            },
+                            "start": {
+                              "type": "integer",
+                              "format": "uint32",
+                              "minimum": 0.0
+                            },
+                            "string": { "type": ["string", "null"] }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "workingHour"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["createWorkingHour"] },
+                      "workingHour": {
+                        "type": "object",
+                        "required": ["start", "taskId"],
+                        "properties": {
+                          "info": {
+                            "type": ["string", "null"],
+                            "maxLength": 250,
+                            "minLength": 1
+                          },
+                          "minutes": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          },
+                          "start": { "type": "string", "format": "date-time" },
+                          "taskId": { "type": "string", "format": "uuid" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "workingHour"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["updateWorkingHour"] },
+                      "workingHour": {
+                        "type": "object",
+                        "required": ["hourId", "start"],
+                        "properties": {
+                          "hourId": { "type": "string", "format": "uuid" },
+                          "info": {
+                            "type": ["string", "null"],
+                            "maxLength": 250,
+                            "minLength": 1
+                          },
+                          "minutes": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          },
+                          "start": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["hourId", "kind"],
+                    "properties": {
+                      "hourId": { "type": "string", "format": "uuid" },
+                      "kind": { "type": "string", "enum": ["deleteWorkingHour"] }
+                    }
+                  }
+                ]
+              },
+              "id": {
+                "type": ["integer", "null"],
+                "format": "uint64",
+                "minimum": 0.0
+              }
+            }
+          },
+          "server_msg": {
+            "$schema": "http://json-schema.org/draft-03/hyper-schema",
+            "type": "object",
+            "required": ["data", "user", "when"],
+            "properties": {
+              "data": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "author",
+                      "createdAt",
+                      "kind",
+                      "messageId",
+                      "text"
+                    ],
+                    "properties": {
+                      "author": {
+                        "type": "object",
+                        "required": [
+                          "admin",
+                          "color",
+                          "email",
+                          "name",
+                          "role",
+                          "userId"
+                        ],
+                        "properties": {
+                          "admin": { "type": "boolean" },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#?([0-9a-fA-F]{3}){1,2}$"
+                          },
+                          "email": { "type": "string" },
+                          "name": { "type": "string" },
+                          "nickname": { "type": ["string", "null"] },
+                          "role": {
+                            "type": "string",
+                            "enum": ["adminMan", "employeeMan"]
+                          },
+                          "userId": { "type": "string", "format": "uuid" }
+                        }
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "partial-date-time"
+                      },
+                      "kind": { "type": "string", "enum": ["createMessage"] },
+                      "messageId": { "type": "string", "format": "uuid" },
+                      "text": { "type": "string" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["editedAt", "kind", "messageId", "text"],
+                    "properties": {
+                      "editedAt": {
+                        "type": "string",
+                        "format": "partial-date-time"
+                      },
+                      "kind": { "type": "string", "enum": ["updateMessage"] },
+                      "messageId": { "type": "string", "format": "uuid" },
+                      "text": { "type": "string" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["board", "kind"],
+                    "properties": {
+                      "board": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                          "emoji": { "type": ["string", "null"], "maxLength": 4 },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["updateBoard"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["column", "kind"],
+                    "properties": {
+                      "column": {
+                        "type": "object",
+                        "required": ["columnId", "name"],
+                        "properties": {
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "emoji": { "type": ["string", "null"], "maxLength": 4 },
+                          "limitDays": {
+                            "type": ["integer", "null"],
+                            "format": "uint16",
+                            "minimum": 0.0
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["createColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["column", "kind"],
+                    "properties": {
+                      "column": {
+                        "type": "object",
+                        "required": ["columnId", "name"],
+                        "properties": {
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "emoji": { "type": ["string", "null"], "maxLength": 4 },
+                          "limitDays": {
+                            "type": ["integer", "null"],
+                            "format": "uint16",
+                            "minimum": 0.0
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["updateColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "kind"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "kind": { "type": "string", "enum": ["deleteColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "index", "kind"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "index": {
+                        "type": "integer",
+                        "format": "uint8",
+                        "minimum": 0.0
+                      },
+                      "kind": { "type": "string", "enum": ["moveColumn"] }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "task"],
+                    "properties": {
+                      "assigned": {
+                        "type": ["object", "null"],
+                        "required": [
+                          "admin",
+                          "color",
+                          "email",
+                          "name",
+                          "role",
+                          "userId"
+                        ],
+                        "properties": {
+                          "admin": { "type": "boolean" },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#?([0-9a-fA-F]{3}){1,2}$"
+                          },
+                          "email": { "type": "string" },
+                          "name": { "type": "string" },
+                          "nickname": { "type": ["string", "null"] },
+                          "role": {
+                            "type": "string",
+                            "enum": ["adminMan", "employeeMan"]
+                          },
+                          "userId": { "type": "string", "format": "uuid" }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["createTask"] },
+                      "task": {
+                        "type": "object",
+                        "required": ["columnId", "lastChanged", "name", "taskId"],
+                        "properties": {
+                          "assignedUserId": {
+                            "type": ["string", "null"],
+                            "format": "uuid"
+                          },
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "description": { "type": ["string", "null"] },
+                          "lastChanged": {
+                            "type": "string",
+                            "format": "partial-date-time"
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          },
+                          "taskId": { "type": "string", "format": "uuid" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "task"],
+                    "properties": {
+                      "assigned": {
+                        "type": ["object", "null"],
+                        "required": [
+                          "admin",
+                          "color",
+                          "email",
+                          "name",
+                          "role",
+                          "userId"
+                        ],
+                        "properties": {
+                          "admin": { "type": "boolean" },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#?([0-9a-fA-F]{3}){1,2}$"
+                          },
+                          "email": { "type": "string" },
+                          "name": { "type": "string" },
+                          "nickname": { "type": ["string", "null"] },
+                          "role": {
+                            "type": "string",
+                            "enum": ["adminMan", "employeeMan"]
+                          },
+                          "userId": { "type": "string", "format": "uuid" }
+                        }
+                      },
+                      "kind": { "type": "string", "enum": ["updateTask"] },
+                      "task": {
+                        "type": "object",
+                        "required": ["columnId", "lastChanged", "name", "taskId"],
+                        "properties": {
+                          "assignedUserId": {
+                            "type": ["string", "null"],
+                            "format": "uuid"
+                          },
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "description": { "type": ["string", "null"] },
+                          "lastChanged": {
+                            "type": "string",
+                            "format": "partial-date-time"
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 250,
+                            "minLength": 1
+                          },
+                          "taskId": { "type": "string", "format": "uuid" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "kind", "taskId"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "kind": { "type": "string", "enum": ["deleteTask"] },
+                      "taskId": { "type": "string", "format": "uuid" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "columnId",
+                      "index",
+                      "kind",
+                      "pastColumnId",
+                      "taskId"
+                    ],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "index": {
+                        "type": "integer",
+                        "format": "uint8",
+                        "minimum": 0.0
+                      },
+                      "kind": { "type": "string", "enum": ["moveTask"] },
+                      "pastColumnId": { "type": "string", "format": "uuid" },
+                      "taskId": { "type": "string", "format": "uuid" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "columnId",
+                      "cursor",
+                      "kind",
+                      "taskId",
+                      "updates"
+                    ],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "cursor": {
+                        "type": "object",
+                        "properties": {
+                          "end": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          },
+                          "start": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          }
+                        }
+                      },
+                      "description": { "type": ["string", "null"] },
+                      "kind": { "type": "string", "enum": ["descriptionUpdate"] },
+                      "taskId": { "type": "string", "format": "uuid" },
+                      "updates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["start"],
+                          "properties": {
+                            "count": {
+                              "type": ["integer", "null"],
+                              "format": "uint32",
+                              "minimum": 0.0
+                            },
+                            "start": {
+                              "type": "integer",
+                              "format": "uint32",
+                              "minimum": 0.0
+                            },
+                            "string": { "type": ["string", "null"] }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "workingHour"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["createWorkingHour"] },
+                      "workingHour": {
+                        "type": "object",
+                        "required": ["columnId", "hourId", "start", "taskId"],
+                        "properties": {
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "hourId": { "type": "string", "format": "uuid" },
+                          "info": { "type": ["string", "null"] },
+                          "minutes": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          },
+                          "start": {
+                            "type": "string",
+                            "format": "partial-date-time"
+                          },
+                          "taskId": { "type": "string", "format": "uuid" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "workingHour"],
+                    "properties": {
+                      "kind": { "type": "string", "enum": ["updateWorkingHour"] },
+                      "workingHour": {
+                        "type": "object",
+                        "required": ["columnId", "hourId", "start", "taskId"],
+                        "properties": {
+                          "columnId": { "type": "string", "format": "uuid" },
+                          "hourId": { "type": "string", "format": "uuid" },
+                          "info": { "type": ["string", "null"] },
+                          "minutes": {
+                            "type": ["integer", "null"],
+                            "format": "uint32",
+                            "minimum": 0.0
+                          },
+                          "start": {
+                            "type": "string",
+                            "format": "partial-date-time"
+                          },
+                          "taskId": { "type": "string", "format": "uuid" }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["columnId", "hourId", "kind", "taskId"],
+                    "properties": {
+                      "columnId": { "type": "string", "format": "uuid" },
+                      "hourId": { "type": "string", "format": "uuid" },
+                      "kind": { "type": "string", "enum": ["deleteWorkingHour"] },
+                      "minutes": {
+                        "type": ["integer", "null"],
+                        "format": "uint32",
+                        "minimum": 0.0
+                      },
+                      "taskId": { "type": "string", "format": "uuid" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["kind", "status"],
+                    "properties": {
+                      "info": { "type": ["string", "null"] },
+                      "kind": { "type": "string", "enum": ["error"] },
+                      "status": {
+                        "type": "integer",
+                        "format": "uint16",
+                        "minimum": 0.0
+                      }
+                    }
+                  }
+                ]
+              },
+              "id": {
+                "type": ["integer", "null"],
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "user": {
+                "type": "object",
+                "required": ["admin", "color", "email", "name", "role", "userId"],
+                "properties": {
+                  "admin": { "type": "boolean" },
+                  "color": {
+                    "type": "string",
+                    "pattern": "^#?([0-9a-fA-F]{3}){1,2}$"
+                  },
+                  "email": { "type": "string" },
+                  "name": { "type": "string" },
+                  "nickname": { "type": ["string", "null"] },
+                  "role": {
+                    "type": "string",
+                    "enum": ["adminMan", "employeeMan"]
+                  },
+                  "userId": { "type": "string", "format": "uuid" }
+                }
+              },
+              "when": { "type": "string", "format": "partial-date-time" }
+            }
+          }
+        }
+      },
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    },
+    {
+      "path": "/api/admin/invite",
+      "method": "POST",
+      "tag": "admin",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["email", "name"],
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email",
+              "maxLength": 250,
+              "minLength": 1
+            },
+            "name": { "type": "string", "maxLength": 250, "minLength": 1 }
+          }
+        }
+      },
+      "res": "None",
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/admin/board/access",
+      "method": "POST",
+      "tag": "admin",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["boardId", "email"],
+          "properties": {
+            "boardId": { "type": "string", "format": "uuid" },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "maxLength": 250,
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "res": "None",
+      "deprecated": false,
+      "is_params": false,
+      "error_codes": []
+    },
+    {
+      "path": "/api/admin/board/access",
+      "method": "DELETE",
+      "tag": "admin",
+      "req": {
+        "Schema": {
+          "$schema": "http://json-schema.org/draft-03/hyper-schema",
+          "type": "object",
+          "required": ["board_id", "user_id"],
+          "properties": {
+            "board_id": { "type": "string", "format": "uuid" },
+            "user_id": { "type": "string", "format": "uuid" }
+          }
+        }
+      },
+      "res": "None",
+      "deprecated": false,
+      "is_params": true,
+      "error_codes": []
+    }
+  ]
+}
