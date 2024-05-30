@@ -1,8 +1,6 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, error::Error as StdError};
 
 use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
-
-use std::error::Error as StdError;
 
 use crate::{
     types::{Kind, RequestInfo, Requests},
@@ -92,7 +90,14 @@ export namespace client {{
                 ));
             },
             (Kind::Schema(schema), true) => {
-                let zod = i_parser.parse_schema_object(&schema.schema)?;
+                let zod =
+                    i_parser
+                        .parse_schema_object(&schema.schema)
+                        .inspect_err(|_| {
+                            #[cfg(feature = "binary")]
+                            #[cfg(feature = "binary")]
+                            eprintln!("Error in client schema generation of: {name}")
+                        })?;
 
                 s.push_str(&format!("    const {name}ParamsSchema = {};\n", zod));
                 s.push_str(&format!(
@@ -117,7 +122,13 @@ export namespace client {{
                 s.push_str(&format!("    export type {struct_name}Res = unknown;\n\n"));
             },
             Kind::Schema(schema) => {
-                let zod = o_parser.parse_schema_object(&schema.schema)?;
+                let zod =
+                    o_parser
+                        .parse_schema_object(&schema.schema)
+                        .inspect_err(|_| {
+                            #[cfg(feature = "binary")]
+                            eprintln!("Error in server schema generation of: {name}")
+                        })?;
 
                 s.push_str(&format!("    const {name}ResSchema = {};\n", zod));
                 s.push_str(&format!(
@@ -129,8 +140,19 @@ export namespace client {{
                 client_msg,
                 server_msg,
             } => {
-                let client_msg = i_parser.parse_schema_object(&client_msg.schema)?;
-                let server_msg = o_parser.parse_schema_object(&server_msg.schema)?;
+                let client_msg = i_parser
+                    .parse_schema_object(&client_msg.schema)
+                    .inspect_err(|_| {
+                        #[cfg(feature = "binary")]
+                        eprintln!(
+                            "Error in websocket client schema generation of: {name}"
+                        )
+                    })?;
+                let server_msg = o_parser
+                    .parse_schema_object(&server_msg.schema)
+                    .inspect_err(|_| {
+                        eprintln!("Error in websocket server generation of: {name}")
+                    })?;
 
                 s.push_str(&format!(
                     "    const {name}ClientMsgSchema = {};\n",
