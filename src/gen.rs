@@ -105,7 +105,13 @@ export namespace client {{
                 ));
             },
             (Kind::Schema(schema), false) => {
-                let zod = i_parser.parse_schema_object(&schema.schema)?;
+                let zod =
+                    i_parser
+                        .parse_schema_object(&schema.schema)
+                        .inspect_err(|_| {
+                            #[cfg(feature = "binary")]
+                            eprintln!("Error in client schema generation of: {name}")
+                        })?;
                 s.push_str(&format!("    const {name}ReqSchema = {};\n", zod));
                 s.push_str(&format!(
                     "    export type {struct_name}Req = z.input<typeof \
