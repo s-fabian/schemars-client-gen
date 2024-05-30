@@ -95,7 +95,6 @@ export namespace client {{
                         .parse_schema_object(&schema.schema)
                         .inspect_err(|_| {
                             #[cfg(feature = "binary")]
-                            #[cfg(feature = "binary")]
                             eprintln!("Error in client schema generation of: {name}")
                         })?;
 
@@ -151,6 +150,7 @@ export namespace client {{
                 let server_msg = o_parser
                     .parse_schema_object(&server_msg.schema)
                     .inspect_err(|_| {
+                        #[cfg(feature = "binary")]
                         eprintln!("Error in websocket server generation of: {name}")
                     })?;
 
