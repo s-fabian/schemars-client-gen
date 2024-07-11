@@ -82,7 +82,19 @@ impl RequestInfo {
             panic!("RequestInfo already has a request schema");
         }
 
-        let mut res = generator().into_root_schema_for::<T>();
+        // query params are not nullable
+        let gen = if matches!(self.method, Method::Get | Method::Head | Method::Delete) {
+            let mut settings = SchemaSettings::default();
+            settings.inline_subschemas = true;
+            settings.option_add_null_type = false;
+            settings.meta_schema =
+                Some("http://json-schema.org/draft-03/hyper-schema".to_string());
+            SchemaGenerator::new(settings)
+        } else {
+            generator()
+        };
+
+        let mut res = gen.into_root_schema_for::<T>();
         res.schema.metadata = None;
         self.req = Kind::Schema(res);
         self
