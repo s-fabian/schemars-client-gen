@@ -28,7 +28,8 @@ type Result<T> = Ok<T> | Err;
 const ok = <T>(value: T) => ({success: true, value} satisfies Ok<T>);
 const err = (response: Response) => ({success: false, response} satisfies Err);
 
-const makeQuery = (params: Record<string, any>) => '?' + new URLSearchParams(params);
+const makeQuery = (params: Record<string, any>) =>
+    '?' + new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined)));
 
 const hasId = (v: unknown): v is { id: number } => {
     return v instanceof Object && 'id' in v && typeof v.id === 'number';
