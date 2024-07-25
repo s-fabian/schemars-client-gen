@@ -1,6 +1,7 @@
 use schemars::{
     gen::{SchemaGenerator, SchemaSettings},
-    schema::RootSchema,
+    schema::{RootSchema, SchemaObject},
+    visit::Visitor,
     JsonSchema,
 };
 use serde::{Deserialize, Serialize};
@@ -50,12 +51,28 @@ pub struct RequestInfo {
     pub error_codes: Vec<(u16, String)>,
 }
 
-pub fn generator() -> SchemaGenerator {
+pub fn settings() -> SchemaSettings {
     let mut settings = SchemaSettings::default();
     settings.inline_subschemas = true;
     settings.meta_schema =
         Some("http://json-schema.org/draft-03/hyper-schema".to_string());
+    settings
+}
+
+pub fn generator(settings: SchemaSettings) -> SchemaGenerator {
     SchemaGenerator::new(settings)
+}
+
+#[derive(Debug, Copy, Clone)]
+struct NoUndefined;
+
+impl Visitor for NoUndefined {
+    fn visit_schema_object(&mut self, schema: &mut SchemaObject) {
+        if let Some(object) = &mut schema.object {
+            let mut properties = object.properties.keys().cloned().collect();
+            object.required.append(&mut properties);
+        }
+    }
 }
 
 impl RequestInfo {
@@ -84,14 +101,11 @@ impl RequestInfo {
 
         // query params are not nullable
         let gen = if matches!(self.method, Method::Get | Method::Head | Method::Delete) {
-            let mut settings = SchemaSettings::default();
-            settings.inline_subschemas = true;
+            let mut settings = settings();
             settings.option_add_null_type = false;
-            settings.meta_schema =
-                Some("http://json-schema.org/draft-03/hyper-schema".to_string());
-            SchemaGenerator::new(settings)
+            generator(settings)
         } else {
-            generator()
+            generator(settings())
         };
 
         let mut res = gen.into_root_schema_for::<T>();
@@ -105,7 +119,8 @@ impl RequestInfo {
             panic!("RequestInfo already has a response schema");
         }
 
-        let mut res = generator().into_root_schema_for::<T>();
+        let mut res =
+            generator(settings().with_visitor(NoUndefined)).into_root_schema_for::<T>();
         res.schema.metadata = None;
         self.res = Kind::Schema(res);
         self
@@ -119,9 +134,9 @@ impl RequestInfo {
             panic!("RequestInfo with websockets can only be GET requests");
         }
 
-        let mut client_msg = generator().into_root_schema_for::<Client>();
+        let mut client_msg = generator(settings()).into_root_schema_for::<Client>();
         client_msg.schema.metadata = None;
-        let mut server_msg = generator().into_root_schema_for::<Server>();
+        let mut server_msg = generator(settings()).into_root_schema_for::<Server>();
         server_msg.schema.metadata = None;
 
         self.res = Kind::Websocket {
