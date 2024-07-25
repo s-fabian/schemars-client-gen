@@ -1,7 +1,6 @@
 use schemars::{
     gen::{SchemaGenerator, SchemaSettings},
-    schema::{RootSchema, SchemaObject},
-    visit::Visitor,
+    schema::RootSchema,
     JsonSchema,
 };
 use serde::{Deserialize, Serialize};
@@ -63,18 +62,6 @@ pub fn generator(settings: SchemaSettings) -> SchemaGenerator {
     SchemaGenerator::new(settings)
 }
 
-#[derive(Debug, Copy, Clone)]
-struct NoUndefined;
-
-impl Visitor for NoUndefined {
-    fn visit_schema_object(&mut self, schema: &mut SchemaObject) {
-        if let Some(object) = &mut schema.object {
-            let mut properties = object.properties.keys().cloned().collect();
-            object.required.append(&mut properties);
-        }
-    }
-}
-
 impl RequestInfo {
     pub fn new(path: &'static str, method: Method, tag: impl Tag) -> RequestInfo {
         RequestInfo {
@@ -119,8 +106,7 @@ impl RequestInfo {
             panic!("RequestInfo already has a response schema");
         }
 
-        let mut res =
-            generator(settings().with_visitor(NoUndefined)).into_root_schema_for::<T>();
+        let mut res = generator(settings()).into_root_schema_for::<T>();
         res.schema.metadata = None;
         self.res = Kind::Schema(res);
         self

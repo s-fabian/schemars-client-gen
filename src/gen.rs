@@ -61,6 +61,7 @@ export namespace client {{
         add_descriptions: true,
         union_first: true,
         add_default: false,
+        ignore_undefined: false,
     };
 
     let i_parser = Parser::new(Config {
@@ -69,6 +70,7 @@ export namespace client {{
     });
     let o_parser = Parser::new(Config {
         use_coerce_date: true,
+        ignore_undefined: true,
         ..config
     });
 
