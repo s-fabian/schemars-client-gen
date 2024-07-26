@@ -2,7 +2,7 @@ interface Options {
     baseUrl: string;
     globalInit: RequestInit;
 
-    onHttpError?(res: Response): MaybePromise;
+    onHttpError?(res: Response, text: string): MaybePromise;
 
     onNetworkError?(res: Error): MaybePromise;
 }
@@ -92,27 +92,27 @@ class PromiseWrapper<T> implements PromiseLike<T> {
                     if (res.success) {
                         this.isDebug && console.info(res.value);
 
-                        await (this.success_callback &&
-                            this.success_callback(res.value));
+                        await (this.successCallback &&
+                            this.successCallback(res.value));
                     } else {
                         const text = await res.response.text();
 
                         this.isDebug && console.warn(res.response, text);
 
-                        await (this.network_failure_callback &&
-                            this.network_failure_callback(res.response, text));
+                        await (this.networkFailureCallback &&
+                            this.networkFailureCallback(res.response, text));
 
                         if (this.isSilent) return;
 
-                        await (options.onHttpError && options.onHttpError(res.response))
+                        await (options.onHttpError && options.onHttpError(res.response, text))
                     }
                 },
                 async e => {
                     this.isDebug && console.error(e);
                     let error = e instanceof Error ? e : new Error(e);
 
-                    await (this.network_error_callback &&
-                        this.network_error_callback(error));
+                    await (this.networkErrorCallback &&
+                        this.networkErrorCallback(error));
 
                     if (this.isSilent) return;
 
@@ -121,45 +121,45 @@ class PromiseWrapper<T> implements PromiseLike<T> {
             )
             .catch(console.error)
             .then(() => {
-                this.finally_callback && this.finally_callback();
+                this.finallyCallback && this.finallyCallback();
                 this.end && this.end();
             }, () => {
-                this.finally_callback && this.finally_callback();
+                this.finallyCallback && this.finallyCallback();
                 this.end && this.end();
             });
     }
 
-    private success_callback: ((res: T) => MaybePromise) | undefined = undefined;
-    private network_failure_callback:
+    private successCallback: ((res: T) => MaybePromise) | undefined = undefined;
+    private networkFailureCallback:
         | ((res: Response, text: string) => MaybePromise)
         | undefined = undefined;
-    private network_error_callback: ((res: Error) => MaybePromise) | undefined =
+    private networkErrorCallback: ((res: Error) => MaybePromise) | undefined =
         undefined;
-    private finally_callback: (() => MaybePromise) | undefined = undefined;
+    private finallyCallback: (() => MaybePromise) | undefined = undefined;
 
     success(callback: (res: T) => MaybePromise) {
-        this.success_callback = callback;
+        this.successCallback = callback;
         return this;
     }
 
     failure(callback: (res: Error | Response, text?: string) => MaybePromise) {
-        this.network_failure_callback = callback;
-        this.network_error_callback = callback;
+        this.networkFailureCallback = callback;
+        this.networkErrorCallback = callback;
         return this;
     }
 
-    http_failure(callback: (res: Response, text: string) => MaybePromise) {
-        this.network_failure_callback = callback;
+    httpFailure(callback: (res: Response, text: string) => MaybePromise) {
+        this.networkFailureCallback = callback;
         return this;
     }
 
-    network_failure(callback: (res: Error) => MaybePromise) {
-        this.network_error_callback = callback;
+    networkFailure(callback: (res: Error) => MaybePromise) {
+        this.networkErrorCallback = callback;
         return this;
     }
 
     finally(callback: () => MaybePromise) {
-        this.finally_callback = callback;
+        this.finallyCallback = callback;
         return this;
     }
 }
