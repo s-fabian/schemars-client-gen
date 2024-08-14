@@ -176,6 +176,7 @@ class SSE<Message> {
     ) {
         this.sse = init();
         this.sse.onopen = () => this.open = true;
+        this.sse.onerror = () => this.open = false;
     }
 
     onMessage(handler: (this: SSE<Message>, data: Message) => void) {
@@ -186,6 +187,7 @@ class SSE<Message> {
 
     onClose(handler: (this: SSE<Message>, reason: Event) => void) {
         this.closeHandler = this.sse.onerror = (ev) => {
+            this.open = false;
             handler.call(this, ev);
         }
     }
