@@ -244,7 +244,8 @@ export namespace client {{
 
         return new SSE(
             () => new EventSource(
-                `${{url}}{path}{params_suffix}`
+                `${{url}}{path}{params_suffix}`,
+                {{ withCredentials: true }}
             ),
             (data) => {name}Msg.parse(data),
         )
