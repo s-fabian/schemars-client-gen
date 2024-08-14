@@ -121,6 +121,7 @@ export namespace client {{
                 ));
             },
             (Kind::Websocket { .. }, _) => unreachable!(),
+            (Kind::SSE(_), _) => unreachable!(),
         }
 
         match &v.res {
@@ -186,6 +187,24 @@ export namespace client {{
                      {struct_name}ServerMsg>;\n\n"
                 ));
             },
+            Kind::SSE(schema) => {
+                let zod =
+                    o_parser
+                        .parse_schema_object(&schema.schema)
+                        .inspect_err(|_| {
+                            #[cfg(feature = "binary")]
+                            eprintln!("Error in server schema generation of: {name}")
+                        })?;
+
+                s.push_str(&format!("    const {name}Msg = {};\n", zod));
+                s.push_str(&format!(
+                    "    export type {struct_name}Msg = z.output<typeof \
+                     {name}Msg>;\n\n"
+                ));
+                s.push_str(&format!(
+                    "    export type {struct_name}SSE = SSE<{struct_name}Msg>;\n\n"
+                ));
+            },
         }
 
         if let Deprecated::WithInfo(path, method, tag) = &v.deprecated {
@@ -215,7 +234,37 @@ export namespace client {{
             )
         };
 
-        if v.res.is_websocket() {
+        if v.res.is_sse() {
+            s.push_str(&format!(
+                "{comment}    export function {name}({req_params}): {struct_name}SSE {{
+        const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
+            ? `//${{location.host}}${{options.baseUrl}}`
+            : ('//' + options.baseUrl.replace(/^https:\\/\\//, \
+                 '').replace(/^http:\\/\\//, ''));
+
+        return new SSE(
+            () => new EventSource(
+                `${{url}}{path}{params_suffix}`
+            ),
+            (data) => {name}Msg.parse(data),
+        )
+    }}\n",
+                // where to fetch
+                path = v.path,
+                // make the query string
+                params_suffix = if v.is_params && v.req.is_some() {
+                    format!("${{makeQuery({name}ParamsSchema.parse(params))}}")
+                } else {
+                    String::new()
+                },
+                // the request query parameter
+                req_params = if v.is_params && v.req.is_some() {
+                    format!("params: {struct_name}Params, ")
+                } else {
+                    String::new()
+                },
+            ));
+        } else if v.res.is_websocket() {
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): \
                  {struct_name}Websocket {{
@@ -308,6 +357,7 @@ export namespace client {{
                         Kind::Schema(_) =>
                             format!("JSON.stringify({name}ReqSchema.parse(req))"),
                         Kind::Websocket { .. } => unreachable!(),
+                        Kind::SSE { .. } => unreachable!(),
                     }
                 },
                 headers_addition = if !v.is_params && matches!(v.req, Kind::Schema(_)) {
@@ -325,7 +375,8 @@ export namespace client {{
                         ".then(res => res.ok ? \
                          res.json().then({name}ResSchema.parse).then(ok) : err(res))"
                     ),
-                    Kind::Websocket { .. } => todo!(),
+                    Kind::Websocket { .. } => unreachable!(),
+                    Kind::SSE { .. } => unreachable!(),
                 },
             ));
         }

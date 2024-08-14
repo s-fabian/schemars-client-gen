@@ -164,6 +164,41 @@ class PromiseWrapper<T> implements PromiseLike<T> {
     }
 }
 
+class SSE<Message> {
+    public open = false;
+    public sse: EventSource;
+    private messageHandler: ((ev: MessageEvent) => void) | null = null;
+    private closeHandler: ((ev: Event) => void) | null = null;
+
+    constructor(
+        private init: () => EventSource,
+        private parse: (data: unknown) => Message,
+    ) {
+        this.sse = init();
+        this.sse.onopen = () => this.open = true;
+    }
+
+    onMessage(handler: (this: SSE<Message>, data: Message) => void) {
+        this.messageHandler = this.sse.onmessage = (ev) => {
+            handler.call(this, this.parse(ev.data));
+        }
+    }
+
+    onClose(handler: (this: SSE<Message>, reason: Event) => void) {
+        this.closeHandler = this.sse.onerror = (ev) => {
+            handler.call(this, ev);
+        }
+    }
+
+    reconnect() {
+        if (!this.open) {
+            this.sse = this.init();
+            this.sse.onmessage = this.messageHandler;
+            this.sse.onerror = this.closeHandler;
+        }
+    }
+}
+
 class WebsocketWrapper<Client, Server> {
     public open = false;
 

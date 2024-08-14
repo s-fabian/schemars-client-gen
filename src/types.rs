@@ -17,6 +17,7 @@ pub enum Kind {
         client_msg: RootSchema,
         server_msg: RootSchema,
     },
+    SSE(RootSchema),
 }
 
 impl Kind {
@@ -25,6 +26,8 @@ impl Kind {
     }
 
     pub fn is_websocket(&self) -> bool { matches!(self, Kind::Websocket { .. }) }
+
+    pub fn is_sse(&self) -> bool { matches!(self, Kind::SSE(_)) }
 
     // fn is_none(&self) -> bool { matches!(self, Kind::None) }
 }
@@ -109,6 +112,20 @@ impl RequestInfo {
         let mut res = generator(settings()).into_root_schema_for::<T>();
         res.schema.metadata = None;
         self.res = Kind::Schema(res);
+        self
+    }
+
+    pub fn with_sse<Message: JsonSchema>(mut self) -> Self {
+        if self.res.is_some() {
+            panic!("RequestInfo already has a response schema");
+        }
+        if self.method != Method::Get {
+            panic!("RequestInfo with websockets can only be GET requests");
+        }
+
+        let mut res = generator(settings()).into_root_schema_for::<Message>();
+        res.schema.metadata = None;
+        self.res = Kind::SSE(res);
         self
     }
 
