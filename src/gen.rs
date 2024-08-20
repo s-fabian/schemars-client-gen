@@ -236,12 +236,12 @@ export namespace client {{
         };
 
         if v.res.is_sse() {
+            // todo!() make https dynamic
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): {struct_name}SSE {{
         const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            ? `//${{location.host}}${{options.baseUrl}}`
-            : ('//' + options.baseUrl.replace(/^https:\\/\\//, \
-                 '').replace(/^http:\\/\\//, ''));
+            ? `https://${{location.host}}${{options.baseUrl}}`
+            : options.baseUrl;
 
         return new SSE(
             () => new EventSourceImpl(
