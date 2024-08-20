@@ -52,6 +52,10 @@ const jsonContentTypeHeader = (
     return headers;
 };
 
+const isRN = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+
+const EventSourceFill = isRN ? (await import('react-native-event-source' as any)).default : EventSource;
+
 class PromiseWrapper<T> implements PromiseLike<T> {
     promise: Promise<Result<T>>;
     end: (() => void) | null = null;

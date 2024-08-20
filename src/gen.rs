@@ -243,9 +243,9 @@ export namespace client {{
                  '').replace(/^http:\\/\\//, ''));
 
         return new SSE(
-            () => new EventSource(
+            () => new EventSourceFill(
                 `${{url}}{path}{params_suffix}`,
-                {{ withCredentials: true }}
+                isRN ? options.globalInit : {{ withCredentials: true }}
             ),
             (data) => {name}Msg.parse(data),
         )

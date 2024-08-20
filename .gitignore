@@ -5,3 +5,8 @@ update.sh
 input.json
 out.ts
 .DS_Store
+node_modules
+yarn.lock
+package.json
+tsconfig.json
+.yarn
