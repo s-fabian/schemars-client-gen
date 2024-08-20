@@ -166,12 +166,12 @@ class PromiseWrapper<T> implements PromiseLike<T> {
 
 class SSE<Message> {
     public open = false;
-    public sse: EventSource;
+    public sse: EventSourceImpl;
     private messageHandler: ((ev: MessageEvent) => void) | null = null;
     private closeHandler: ((ev: Event) => void) | null = null;
 
     constructor(
-        private init: () => EventSource,
+        private init: () => EventSourceImpl,
         private parse: (data: unknown) => Message,
     ) {
         this.sse = init();
