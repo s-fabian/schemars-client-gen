@@ -47,6 +47,7 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
 
     let mut out = format!(
         r#"import {{ z }} from 'zod';
+import EventSourceImpl from './event-source-impl';
 
 export namespace client {{
 
@@ -243,9 +244,9 @@ export namespace client {{
                  '').replace(/^http:\\/\\//, ''));
 
         return new SSE(
-            () => new EventSourceFill(
+            () => new EventSourceImpl(
                 `${{url}}{path}{params_suffix}`,
-                isRN ? options.globalInit : {{ withCredentials: true }}
+                {{ ...options.globalInit, withCredentials: true }}
             ),
             (data) => {name}Msg.parse(data),
         )
