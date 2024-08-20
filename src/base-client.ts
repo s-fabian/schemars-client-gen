@@ -175,19 +175,28 @@ class SSE<Message> {
         private parse: (data: unknown) => Message,
     ) {
         this.sse = init();
-        this.sse.onopen = () => this.open = true;
-        this.sse.onerror = () => this.open = false;
+        this.sse.addEventListener('open', (ev) => {
+            console.info('open', ev);
+            this.open = true;
+        });
+        this.sse.addEventListener('error', (ev) => {
+            console.info('close', ev);
+            this.open = false;
+            this.closeHandler && this.closeHandler(ev);
+        });
+        this.sse.addEventListener('message', (ev) => {
+            this.messageHandler && this.messageHandler(ev);
+        });
     }
 
     onMessage(handler: (this: SSE<Message>, data: Message) => void) {
-        this.messageHandler = this.sse.onmessage = (ev) => {
-            handler.call(this, this.parse(ev.data));
+        this.messageHandler = (ev) => {
+            handler.call(this, this.parse(JSON.parse(ev.data)));
         }
     }
 
     onClose(handler: (this: SSE<Message>, reason: Event) => void) {
-        this.closeHandler = this.sse.onerror = (ev) => {
-            this.open = false;
+        this.closeHandler = (ev) => {
             handler.call(this, ev);
         }
     }
@@ -195,8 +204,6 @@ class SSE<Message> {
     reconnect() {
         if (!this.open) {
             this.sse = this.init();
-            this.sse.onmessage = this.messageHandler;
-            this.sse.onerror = this.closeHandler;
         }
     }
 }

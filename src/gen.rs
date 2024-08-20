@@ -43,7 +43,7 @@ fn format_js(js: &str) -> Result<String, Box<dyn StdError>> {
 
 pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdError>> {
     let mut namespaces = BTreeMap::<&'static str, Vec<String>>::new();
-    let classes = String::from(include_str!("base-client-1.ts"));
+    let classes = String::from(include_str!("base-client.ts"));
 
     let mut out = format!(
         r#"import {{ z }} from 'zod';
