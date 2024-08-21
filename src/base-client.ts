@@ -175,17 +175,15 @@ class SSE<Message> {
         private parse: (data: unknown) => Message,
     ) {
         this.sse = init();
-        this.sse.addEventListener('open', (ev: Event) => {
-            console.info('open', ev);
+        this.sse.addEventListener('open', () => {
             this.open = true;
         });
-        this.sse.addEventListener('error', (ev: Event) => {
-            console.info('close', ev);
+        this.sse.addEventListener('error', (ev: unknown) => {
             this.open = false;
-            this.closeHandler && this.closeHandler(ev);
+            this.closeHandler && this.closeHandler(ev as Event);
         });
-        this.sse.addEventListener('message', (ev: MessageEvent) => {
-            this.messageHandler && this.messageHandler(ev);
+        this.sse.addEventListener('message', (ev: unknown) => {
+            this.messageHandler && this.messageHandler(ev as MessageEvent);
         });
     }
 

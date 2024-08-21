@@ -239,7 +239,7 @@ export namespace client {{
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): {struct_name}SSE {{
         const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            && location in global
+            && 'location' in global
             ? `https://${{(global.location as any).host}}${{options.baseUrl}}`
             : options.baseUrl;
 
