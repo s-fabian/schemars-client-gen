@@ -166,32 +166,32 @@ class PromiseWrapper<T> implements PromiseLike<T> {
 
 class SSE<Message> {
     public open = false;
-    public sse: EventSourceImpl;
+    public sse: EventSource;
     private messageHandler: ((ev: MessageEvent) => void) | null = null;
     private closeHandler: ((ev: Event) => void) | null = null;
 
     constructor(
-        private init: () => EventSourceImpl,
+        private init: () => EventSource,
         private parse: (data: unknown) => Message,
     ) {
         this.sse = init();
-        this.sse.addEventListener('open', (ev) => {
+        this.sse.addEventListener('open', (ev: Event) => {
             console.info('open', ev);
             this.open = true;
         });
-        this.sse.addEventListener('error', (ev) => {
+        this.sse.addEventListener('error', (ev: Event) => {
             console.info('close', ev);
             this.open = false;
             this.closeHandler && this.closeHandler(ev);
         });
-        this.sse.addEventListener('message', (ev) => {
+        this.sse.addEventListener('message', (ev: MessageEvent) => {
             this.messageHandler && this.messageHandler(ev);
         });
     }
 
     onMessage(handler: (this: SSE<Message>, data: Message) => void) {
         this.messageHandler = (ev) => {
-            handler.call(this, this.parse(JSON.parse(ev.data)));
+            handler.call(this, this.parse(JSON.parse(ev.data!)));
         }
     }
 
