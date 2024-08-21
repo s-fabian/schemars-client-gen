@@ -47,7 +47,6 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
 
     let mut out = format!(
         r#"import {{ z }} from 'zod';
-import EventSourceImpl from './event-source-impl';
 
 export namespace client {{
 
@@ -240,11 +239,12 @@ export namespace client {{
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): {struct_name}SSE {{
         const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            ? `https://${{location.host}}${{options.baseUrl}}`
+            && location in global
+            ? `https://${{global.location.host}}${{options.baseUrl}}`
             : options.baseUrl;
 
         return new SSE(
-            () => new EventSourceImpl(
+            () => new EventSource(
                 `${{url}}{path}{params_suffix}`,
                 {{ ...options.globalInit, withCredentials: true }}
             ),
