@@ -13,6 +13,7 @@ pub use types::{generator, Kind, RequestInfo, Requests, Tag};
 #[cfg(test)]
 mod tests {
     use schemars::JsonSchema;
+    use crate::{generate, Method, RequestInfo, Requests};
 
     #[derive(JsonSchema)]
     struct Req {

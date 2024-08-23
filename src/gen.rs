@@ -248,14 +248,14 @@ export namespace client {{
                 `${{url}}{path}{params_suffix}`,
                 {{ ...options.globalInit, withCredentials: true }}
             ),
-            (data) => {name}Msg.parse(data),
+            (data) => options.unsafe ? data as {struct_name}Msg : {name}Msg.parse(data),
         )
     }}\n",
                 // where to fetch
                 path = v.path,
                 // make the query string
                 params_suffix = if v.is_params && v.req.is_some() {
-                    format!("${{makeQuery({name}ParamsSchema.parse(params))}}")
+                    format!("${{makeQuery(options.unsafe ? params as {struct_name}Params : {name}ParamsSchema.parse(params))}}")
                 } else {
                     String::new()
                 },
@@ -281,8 +281,8 @@ export namespace client {{
             () => new WebSocket(
                 `${{wsBaseUrl}}{path}{params_suffix}`
             ),
-            (data) => {name}ClientMsgSchema.parse(data),
-            (data) => {name}ServerMsgSchema.parse(data)
+            (data) => options.unsafe ? data as {struct_name}ClientMsg : {name}ClientMsgSchema.parse(data),
+            (data) => options.unsafe ? data as {struct_name}ServerMsg : {name}ServerMsgSchema.parse(data)
         )
     }}\n",
                 // the function name
@@ -297,7 +297,7 @@ export namespace client {{
                 path = v.path,
                 // make the query string
                 params_suffix = if v.is_params && v.req.is_some() {
-                    format!("${{makeQuery({name}ParamsSchema.parse(params))}}")
+                    format!("${{makeQuery(options.unsafe ? params as {struct_name}Params : {name}ParamsSchema.parse(params))}}")
                 } else {
                     String::new()
                 },
@@ -343,7 +343,7 @@ export namespace client {{
                 path = v.path,
                 // make the query string
                 params_suffix = if v.is_params && v.req.is_some() {
-                    format!(" + makeQuery({name}ParamsSchema.parse(params))")
+                    format!(" + makeQuery(options.unsafe ? params as {struct_name}Params : {name}ParamsSchema.parse(params))")
                 } else {
                     String::new()
                 },
@@ -375,7 +375,7 @@ export namespace client {{
                         .to_string(),
                     Kind::Schema(_) => format!(
                         ".then(res => res.ok ? \
-                         res.json().then({name}ResSchema.parse).then(ok) : err(res))"
+                         res.json().then(options.unsafe ? (data) => (data as {struct_name}Res) : {name}ResSchema.parse).then(ok) : err(res))"
                     ),
                     Kind::Websocket { .. } => unreachable!(),
                     Kind::SSE { .. } => unreachable!(),

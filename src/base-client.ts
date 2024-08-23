@@ -1,6 +1,7 @@
 interface Options {
     baseUrl: string;
     globalInit: RequestInit;
+    unsafe: boolean;
 
     onHttpError?(res: Response, text: string): MaybePromise;
 
@@ -9,6 +10,7 @@ interface Options {
 
 export const options: Options = {
     baseUrl: '',
+    unsafe: false,
     globalInit: {},
 }
 
