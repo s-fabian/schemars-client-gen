@@ -70,6 +70,9 @@ export namespace client {{
     });
     let o_parser = Parser::new(Config {
         use_coerce_date: true,
+        #[cfg(feature = "add-undefined")]
+        ignore_undefined: false,
+        #[cfg(not(feature = "add-undefined"))]
         ignore_undefined: true,
         ..config
     });
