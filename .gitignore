@@ -10,4 +10,3 @@ yarn.lock
 package.json
 tsconfig.json
 .yarn
-sse.ts

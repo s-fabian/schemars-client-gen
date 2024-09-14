@@ -43,7 +43,18 @@ fn format_js(js: &str) -> Result<String, Box<dyn StdError>> {
 
 pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdError>> {
     let mut namespaces = BTreeMap::<&'static str, Vec<String>>::new();
-    let classes = String::from(include_str!("base-client.ts"));
+    let mut classes = String::from(include_str!("base/client.ts"));
+
+    let ws = include_str!("base/websocket.ts");
+    let sse = include_str!("base/sse.ts");
+
+    if requests.iter().any(|r| r.res.is_websocket()) {
+        classes.push_str(ws);
+    }
+
+    if requests.iter().any(|r| r.res.is_sse()) {
+        classes.push_str(sse);
+    }
 
     let mut out = format!(
         r#"import {{ z }} from 'zod';
