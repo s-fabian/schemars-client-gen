@@ -156,6 +156,32 @@ impl RequestInfo {
         self
     }
 
+    pub fn with_any_req_body(mut self) -> Self {
+        assert!(
+            self.req_body.replace(Kind::Any).is_none(),
+            "Response schema already present"
+        );
+
+        self
+    }
+
+    pub fn with_any_req_params(mut self) -> Self {
+        assert!(
+            self.req_params.replace(Kind::Any).is_none(),
+            "Response schema already present"
+        );
+
+        self
+    }
+
+    pub fn with_any_req(self) -> Self {
+        if self.request_default_params() {
+            self.with_any_req_params()
+        } else {
+            self.with_any_req_body()
+        }
+    }
+
     pub fn with_any_res(mut self) -> Self {
         assert!(
             self.res_body.replace(Kind::Any).is_none(),
