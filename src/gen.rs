@@ -48,11 +48,11 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
     let ws = include_str!("base/websocket.ts");
     let sse = include_str!("base/sse.ts");
 
-    if requests.iter().any(|r| r.res.is_websocket()) {
+    if requests.iter().any(|r| r.res_body.is_websocket()) {
         classes.push_str(ws);
     }
 
-    if requests.iter().any(|r| r.res.is_sse()) {
+    if requests.iter().any(|r| r.res_body.is_sse()) {
         classes.push_str(sse);
     }
 
@@ -93,19 +93,16 @@ export namespace client {{
         let name = make_name(v);
         let struct_name = first_upper(&name);
 
-        match (&v.req, v.is_params) {
-            (Kind::None, _) => {},
-            (Kind::Any, true) => {
+        match &v.req_params {
+            Kind::None => {},
+
+            Kind::Any => {
                 s.push_str(&format!(
                     "    export type {struct_name}Params = Record<string, string>;\n\n"
                 ));
             },
-            (Kind::Any, false) => {
-                s.push_str(&format!(
-                    "    type {struct_name}Req = Blob | FormData | string;\n\n"
-                ));
-            },
-            (Kind::Schema(schema), true) => {
+
+            Kind::Schema(schema) => {
                 let zod =
                     i_parser
                         .parse_schema_object(&schema.schema)
@@ -120,7 +117,20 @@ export namespace client {{
                      {name}ParamsSchema>;\n\n"
                 ));
             },
-            (Kind::Schema(schema), false) => {
+
+            kind => panic!("Unexpected kind: {kind}"),
+        }
+
+        match &v.req_body {
+            Kind::None => {},
+
+            Kind::Any => {
+                s.push_str(&format!(
+                    "    type {struct_name}Req = Blob | FormData | string;\n\n"
+                ));
+            },
+
+            Kind::Schema(schema) => {
                 let zod =
                     i_parser
                         .parse_schema_object(&schema.schema)
@@ -134,11 +144,11 @@ export namespace client {{
                      {name}ReqSchema>;\n\n"
                 ));
             },
-            (Kind::Websocket { .. }, _) => unreachable!(),
-            (Kind::SSE(_), _) => unreachable!(),
+
+            kind => panic!("Unexpected kind: {kind}"),
         }
 
-        match &v.res {
+        match &v.res_body {
             Kind::None => {},
             Kind::Any => {
                 s.push_str(&format!("    export type {struct_name}Res = unknown;\n\n"));
@@ -212,8 +222,7 @@ export namespace client {{
 
                 s.push_str(&format!("    const {name}Msg = {};\n", zod));
                 s.push_str(&format!(
-                    "    export type {struct_name}Msg = z.output<typeof \
-                     {name}Msg>;\n\n"
+                    "    export type {struct_name}Msg = z.output<typeof {name}Msg>;\n\n"
                 ));
                 s.push_str(&format!(
                     "    export type {struct_name}SSE = SSE<{struct_name}Msg>;\n\n"
@@ -248,12 +257,14 @@ export namespace client {{
             )
         };
 
-        if v.res.is_sse() {
+        if v.res_body.is_sse() {
             // todo!() make https dynamic
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): {struct_name}SSE {{
-        const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            && 'location' in global
+        \
+                 const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
+            \
+                 && 'location' in global
             ? `https://${{(global.location as any).host}}${{options.baseUrl}}`
             : options.baseUrl;
 
@@ -268,19 +279,22 @@ export namespace client {{
                 // where to fetch
                 path = v.path,
                 // make the query string
-                params_suffix = if v.is_params && v.req.is_some() {
-                    format!("${{makeQuery(options.unsafe ? params as {struct_name}Params : {name}ParamsSchema.parse(params))}}")
+                params_suffix = if v.req_params.is_some() {
+                    format!(
+                        "${{makeQuery(options.unsafe ? params as {struct_name}Params : \
+                         {name}ParamsSchema.parse(params))}}"
+                    )
                 } else {
                     String::new()
                 },
                 // the request query parameter
-                req_params = if v.is_params && v.req.is_some() {
+                req_params = if v.req_params.is_some() {
                     format!("params: {struct_name}Params, ")
                 } else {
                     String::new()
                 },
             ));
-        } else if v.res.is_websocket() {
+        } else if v.res_body.is_websocket() {
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): \
                  {struct_name}Websocket {{
@@ -295,14 +309,16 @@ export namespace client {{
             () => new WebSocket(
                 `${{wsBaseUrl}}{path}{params_suffix}`
             ),
-            (data) => options.unsafe ? data as {struct_name}ClientMsg : {name}ClientMsgSchema.parse(data),
-            (data) => options.unsafe ? data as {struct_name}ServerMsg : {name}ServerMsgSchema.parse(data)
+            (data) => options.unsafe ? data as {struct_name}ClientMsg : \
+                 {name}ClientMsgSchema.parse(data),
+            (data) => options.unsafe ? data as {struct_name}ServerMsg : \
+                 {name}ServerMsgSchema.parse(data)
         )
     }}\n",
                 // the function name
                 name = name,
                 // the request query parameter
-                req_params = if v.is_params && v.req.is_some() {
+                req_params = if v.req_params.is_some() {
                     format!("params: {struct_name}Params, ")
                 } else {
                     String::new()
@@ -310,8 +326,11 @@ export namespace client {{
                 // where to fetch
                 path = v.path,
                 // make the query string
-                params_suffix = if v.is_params && v.req.is_some() {
-                    format!("${{makeQuery(options.unsafe ? params as {struct_name}Params : {name}ParamsSchema.parse(params))}}")
+                params_suffix = if v.req_params.is_some() {
+                    format!(
+                        "${{makeQuery(options.unsafe ? params as {struct_name}Params : \
+                         {name}ParamsSchema.parse(params))}}"
+                    )
                 } else {
                     String::new()
                 },
@@ -336,19 +355,19 @@ export namespace client {{
                 // the function name
                 name = name,
                 // the request body parameter
-                req_json = if !v.is_params && v.req.is_some() {
+                req_json = if v.req_body.is_some() {
                     format!("req: {struct_name}Req, ")
                 } else {
                     String::new()
                 },
                 // the request query parameter
-                req_params = if v.is_params && v.req.is_some() {
+                req_params = if v.req_params.is_some() {
                     format!("params: {struct_name}Params, ")
                 } else {
                     String::new()
                 },
                 // the response type
-                res_name = if v.res.is_some() {
+                res_name = if v.res_body.is_some() {
                     format!("{struct_name}Res")
                 } else {
                     "Response".to_string()
@@ -356,18 +375,21 @@ export namespace client {{
                 // where to fetch
                 path = v.path,
                 // make the query string
-                params_suffix = if v.is_params && v.req.is_some() {
-                    format!(" + makeQuery(options.unsafe ? params as {struct_name}Params : {name}ParamsSchema.parse(params))")
+                params_suffix = if v.req_params.is_some() {
+                    format!(
+                        " + makeQuery(options.unsafe ? params as {struct_name}Params : \
+                         {name}ParamsSchema.parse(params))"
+                    )
                 } else {
                     String::new()
                 },
                 // the method for fetching
                 method = v.method,
                 // make the request body
-                req = if v.is_params {
+                req = if v.req_body.is_none() {
                     String::from("null")
                 } else {
-                    match &v.req {
+                    match &v.req_body {
                         Kind::None => "null".to_string(),
                         Kind::Any => "req".to_string(),
                         Kind::Schema(_) =>
@@ -376,20 +398,21 @@ export namespace client {{
                         Kind::SSE { .. } => unreachable!(),
                     }
                 },
-                headers_addition = if !v.is_params && matches!(v.req, Kind::Schema(_)) {
+                headers_addition = if v.req_body.is_some() {
                     "\nheaders: jsonContentTypeHeader(init.headers as RepresentsHeader, \
                      options.globalInit.headers as RepresentsHeader),"
                 } else {
                     ""
                 },
                 // make the response
-                res = match &v.res {
+                res = match &v.res_body {
                     Kind::None => ".then(res => res.ok ? ok(res) : err(res))".to_string(),
                     Kind::Any => ".then(res => res.ok ? res.text().then(ok) : err(res))"
                         .to_string(),
                     Kind::Schema(_) => format!(
-                        ".then(res => res.ok ? \
-                         res.json().then(options.unsafe ? (data) => (data as {struct_name}Res) : {name}ResSchema.parse).then(ok) : err(res))"
+                        ".then(res => res.ok ? res.json().then(options.unsafe ? (data) \
+                         => (data as {struct_name}Res) : \
+                         {name}ResSchema.parse).then(ok) : err(res))"
                     ),
                     Kind::Websocket { .. } => unreachable!(),
                     Kind::SSE { .. } => unreachable!(),

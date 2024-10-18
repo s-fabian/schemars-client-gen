@@ -1,3 +1,8 @@
+use std::{
+    fmt::{Display, Formatter},
+    mem,
+};
+
 use schemars::{
     gen::{SchemaGenerator, SchemaSettings},
     schema::RootSchema,
@@ -21,6 +26,8 @@ pub enum Kind {
 }
 
 impl Kind {
+    pub fn is_none(&self) -> bool { matches!(self, Kind::None) }
+
     pub fn is_some(&self) -> bool {
         matches!(self, Kind::Any | Kind::Schema(_) | Kind::Websocket { .. })
     }
@@ -29,7 +36,21 @@ impl Kind {
 
     pub fn is_sse(&self) -> bool { matches!(self, Kind::SSE(_)) }
 
+    fn replace(&mut self, new: Kind) -> Kind { mem::replace(self, new) }
+
     // fn is_none(&self) -> bool { matches!(self, Kind::None) }
+}
+
+impl Display for Kind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Kind::None => "none",
+            Kind::Any => "any",
+            Kind::Schema(_) => "defined",
+            Kind::Websocket { .. } => "websocket",
+            Kind::SSE(_) => "server side events",
+        })
+    }
 }
 
 pub trait Tag {
@@ -45,10 +66,10 @@ pub struct RequestInfo {
     pub path: String,
     pub method: Method,
     pub tag: String,
-    pub req: Kind,
-    pub res: Kind,
+    pub req_body: Kind,
+    pub req_params: Kind,
+    pub res_body: Kind,
     pub deprecated: Deprecated,
-    pub is_params: bool,
     #[serde(default)]
     pub error_codes: Vec<(u16, String)>,
 }
@@ -68,12 +89,12 @@ pub fn generator(settings: SchemaSettings) -> SchemaGenerator {
 impl RequestInfo {
     pub fn new(path: &'static str, method: Method, tag: impl Tag) -> RequestInfo {
         RequestInfo {
-            is_params: matches!(method, Method::Get | Method::Head | Method::Delete),
             path: path.to_string(),
             method,
             tag: tag.tag_name().to_string(),
-            req: Kind::None,
-            res: Kind::None,
+            req_body: Kind::None,
+            req_params: Kind::None,
+            res_body: Kind::None,
             deprecated: Deprecated::default(),
             error_codes: Vec::new(),
         }
@@ -85,10 +106,6 @@ impl RequestInfo {
     }
 
     pub fn with_req_schema<T: JsonSchema>(mut self) -> Self {
-        if self.req.is_some() {
-            panic!("RequestInfo already has a request schema");
-        }
-
         // query params are not nullable
         let gen = if matches!(self.method, Method::Get | Method::Head | Method::Delete) {
             let mut settings = settings();
@@ -100,39 +117,49 @@ impl RequestInfo {
 
         let mut res = gen.into_root_schema_for::<T>();
         res.schema.metadata = None;
-        self.req = Kind::Schema(res);
+
+        assert!(
+            (if self.request_default_params() {
+                self.req_params.replace(Kind::Schema(res))
+            } else {
+                self.req_body.replace(Kind::Schema(res))
+            })
+            .is_none(),
+            "Request schema already present"
+        );
+
         self
     }
 
     pub fn with_res_schema<T: JsonSchema>(mut self) -> Self {
-        if self.res.is_some() {
-            panic!("RequestInfo already has a response schema");
-        }
-
         let mut res = generator(settings()).into_root_schema_for::<T>();
         res.schema.metadata = None;
-        self.res = Kind::Schema(res);
+
+        assert!(
+            self.res_body.replace(Kind::Schema(res)).is_none(),
+            "Response schema already present"
+        );
+
         self
     }
 
     pub fn with_sse<Message: JsonSchema>(mut self) -> Self {
-        if self.res.is_some() {
-            panic!("RequestInfo already has a response schema");
-        }
         if self.method != Method::Get {
             panic!("RequestInfo with websockets can only be GET requests");
         }
 
         let mut res = generator(settings()).into_root_schema_for::<Message>();
         res.schema.metadata = None;
-        self.res = Kind::SSE(res);
+
+        assert!(
+            self.res_body.replace(Kind::SSE(res)).is_none(),
+            "Response schema already present"
+        );
+
         self
     }
 
     pub fn with_websocket<Client: JsonSchema, Server: JsonSchema>(mut self) -> Self {
-        if self.res.is_some() {
-            panic!("RequestInfo already has a response schema");
-        }
         if self.method != Method::Get {
             panic!("RequestInfo with websockets can only be GET requests");
         }
@@ -142,10 +169,16 @@ impl RequestInfo {
         let mut server_msg = generator(settings()).into_root_schema_for::<Server>();
         server_msg.schema.metadata = None;
 
-        self.res = Kind::Websocket {
-            server_msg,
-            client_msg,
-        };
+        assert!(
+            self.res_body
+                .replace(Kind::Websocket {
+                    server_msg,
+                    client_msg,
+                })
+                .is_none(),
+            "Response schema already present"
+        );
+
         self
     }
 
@@ -161,6 +194,10 @@ impl RequestInfo {
         );
         self
     }
+
+    fn request_default_params(&self) -> bool {
+        matches!(self.method, Method::Get | Method::Head | Method::Delete)
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -169,10 +206,11 @@ pub struct Requests {
 }
 
 impl Requests {
-    pub fn with(mut self, info_fn: impl Fn() -> RequestInfo) -> Self {
+    pub fn with(mut self, info_fn: impl FnOnce() -> RequestInfo) -> Self {
         self.requests.push(info_fn());
         self
     }
+
     // pub fn with_raw(mut self, info: RequestInfo) -> Self {
     //     self.requests.push(info);
     //     self

@@ -13,6 +13,7 @@ pub use types::{generator, Kind, RequestInfo, Requests, Tag};
 #[cfg(test)]
 mod tests {
     use schemars::JsonSchema;
+
     use crate::{generate, Method, RequestInfo, Requests};
 
     #[derive(JsonSchema)]
@@ -36,7 +37,7 @@ mod tests {
         let out = generate(Requests {
             requests: vec![info],
         })
-            .unwrap();
+        .unwrap();
 
         std::fs::write("sse.ts", out).unwrap();
     }
