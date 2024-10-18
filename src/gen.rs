@@ -398,7 +398,7 @@ export namespace client {{
                         Kind::SSE { .. } => unreachable!(),
                     }
                 },
-                headers_addition = if v.req_body.is_some() {
+                headers_addition = if v.req_body.is_schema() {
                     "\nheaders: jsonContentTypeHeader(init.headers as RepresentsHeader, \
                      options.globalInit.headers as RepresentsHeader),"
                 } else {

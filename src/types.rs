@@ -32,6 +32,8 @@ impl Kind {
         matches!(self, Kind::Any | Kind::Schema(_) | Kind::Websocket { .. })
     }
 
+    pub fn is_schema(&self) -> bool { matches!(self, Kind::Schema(_)) }
+
     pub fn is_websocket(&self) -> bool { matches!(self, Kind::Websocket { .. }) }
 
     pub fn is_sse(&self) -> bool { matches!(self, Kind::SSE(_)) }
