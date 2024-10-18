@@ -76,9 +76,10 @@ pub struct RequestInfo {
     pub error_codes: Vec<(u16, String)>,
 }
 
-pub fn settings() -> SchemaSettings {
+pub fn settings(option_add_null_type: bool) -> SchemaSettings {
     let mut settings = SchemaSettings::default();
     settings.inline_subschemas = true;
+    settings.option_add_null_type = option_add_null_type;
     settings.meta_schema =
         Some("http://json-schema.org/draft-03/hyper-schema".to_string());
     settings
@@ -107,34 +108,44 @@ impl RequestInfo {
         self
     }
 
-    pub fn with_req_schema<T: JsonSchema>(mut self) -> Self {
-        // query params are not nullable
-        let gen = if matches!(self.method, Method::Get | Method::Head | Method::Delete) {
-            let mut settings = settings();
-            settings.option_add_null_type = false;
-            generator(settings)
-        } else {
-            generator(settings())
-        };
+    pub fn with_req_params<T: JsonSchema>(mut self) -> Self {
+        let gen = generator(settings(false));
 
         let mut res = gen.into_root_schema_for::<T>();
         res.schema.metadata = None;
 
         assert!(
-            (if self.request_default_params() {
-                self.req_params.replace(Kind::Schema(res))
-            } else {
-                self.req_body.replace(Kind::Schema(res))
-            })
-            .is_none(),
-            "Request schema already present"
+            self.req_params.replace(Kind::Schema(res)).is_none(),
+            "Request params schema already present"
         );
 
         self
     }
 
+    pub fn with_req_body<T: JsonSchema>(mut self) -> Self {
+        let gen = generator(settings(true));
+
+        let mut res = gen.into_root_schema_for::<T>();
+        res.schema.metadata = None;
+
+        assert!(
+            self.req_body.replace(Kind::Schema(res)).is_none(),
+            "Request body schema already present"
+        );
+
+        self
+    }
+
+    pub fn with_req_schema<T: JsonSchema>(self) -> Self {
+        if self.request_default_params() {
+            self.with_req_params::<T>()
+        } else {
+            self.with_req_body::<T>()
+        }
+    }
+
     pub fn with_res_schema<T: JsonSchema>(mut self) -> Self {
-        let mut res = generator(settings()).into_root_schema_for::<T>();
+        let mut res = generator(settings(true)).into_root_schema_for::<T>();
         res.schema.metadata = None;
 
         assert!(
@@ -145,12 +156,22 @@ impl RequestInfo {
         self
     }
 
+    pub fn with_any_res(mut self) -> Self {
+        assert!(
+            self.res_body.replace(Kind::Any).is_none(),
+            "Response schema already present"
+        );
+
+        self
+    }
+
+
     pub fn with_sse<Message: JsonSchema>(mut self) -> Self {
         if self.method != Method::Get {
             panic!("RequestInfo with websockets can only be GET requests");
         }
 
-        let mut res = generator(settings()).into_root_schema_for::<Message>();
+        let mut res = generator(settings(true)).into_root_schema_for::<Message>();
         res.schema.metadata = None;
 
         assert!(
@@ -166,9 +187,9 @@ impl RequestInfo {
             panic!("RequestInfo with websockets can only be GET requests");
         }
 
-        let mut client_msg = generator(settings()).into_root_schema_for::<Client>();
+        let mut client_msg = generator(settings(true)).into_root_schema_for::<Client>();
         client_msg.schema.metadata = None;
-        let mut server_msg = generator(settings()).into_root_schema_for::<Server>();
+        let mut server_msg = generator(settings(true)).into_root_schema_for::<Server>();
         server_msg.schema.metadata = None;
 
         assert!(
