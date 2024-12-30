@@ -6,12 +6,15 @@ interface Options {
     onHttpError?(res: Response, text: string): MaybePromise;
 
     onNetworkError?(res: Error): MaybePromise;
+
+    fetch(req: Request): Promise<Response>
 }
 
 export const options: Options = {
     baseUrl: '',
     unsafe: false,
     globalInit: {},
+    fetch: self.fetch
 }
 
 type MaybePromise<T = unknown> = T | Promise<T>;

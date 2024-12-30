@@ -340,15 +340,17 @@ export namespace client {{
                 "{comment}    export function {name}({req_json}{req_params}init: \
                  RequestInit = {{}}): PromiseWrapper<{res_name}> {{
         return new PromiseWrapper(
-            fetch(
-                options.baseUrl + '{path}'{params_suffix},
-                {{
-                    method: '{method}',
-                    body: {req},
-                    credentials: 'include',
-                    ...options.globalInit,
-                    ...init,{headers_addition}
-                }}
+            options.fetch(
+                new Request(
+                    options.baseUrl + '{path}'{params_suffix},
+                    {{
+                        method: '{method}',
+                        body: {req},
+                        credentials: 'include',
+                        ...options.globalInit,
+                        ...init,{headers_addition}
+                    }}
+                )
             ){res}
         )
     }}\n",
