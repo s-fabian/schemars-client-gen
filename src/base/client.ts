@@ -14,7 +14,7 @@ export const options: Options = {
     baseUrl: '',
     unsafe: false,
     globalInit: {},
-    fetch: globalThis.fetch
+    fetch: globalThis.fetch.bind(globalThis),
 }
 
 type MaybePromise<T = unknown> = T | Promise<T>;
