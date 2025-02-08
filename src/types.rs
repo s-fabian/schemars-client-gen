@@ -63,6 +63,9 @@ impl Tag for &'static str {
     fn tag_name(&self) -> &'static str { self }
 }
 
+#[inline(always)]
+fn r#true() -> bool { true }
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestInfo {
     pub path: String,
@@ -74,6 +77,8 @@ pub struct RequestInfo {
     pub deprecated: Deprecated,
     #[serde(default)]
     pub error_codes: Vec<(u16, String)>,
+    #[serde(default = "r#true")]
+    pub add_to_client: bool,
 }
 
 pub fn settings(option_add_null_type: bool) -> SchemaSettings {
@@ -100,11 +105,17 @@ impl RequestInfo {
             res_body: Kind::None,
             deprecated: Deprecated::default(),
             error_codes: Vec::new(),
+            add_to_client: true,
         }
     }
 
     pub fn with_error(mut self, code: u16, desc: &'static str) -> Self {
         self.error_codes.push((code, desc.to_string()));
+        self
+    }
+
+    pub fn hide(mut self) -> Self {
+        self.add_to_client = false;
         self
     }
 
@@ -190,7 +201,6 @@ impl RequestInfo {
 
         self
     }
-
 
     pub fn with_sse<Message: JsonSchema>(mut self) -> Self {
         if self.method != Method::Get {

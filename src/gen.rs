@@ -42,6 +42,9 @@ fn format_js(js: &str) -> Result<String, Box<dyn StdError>> {
 }
 
 pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdError>> {
+    let requests: Vec<RequestInfo> =
+        requests.into_iter().filter(|r| r.add_to_client).collect();
+
     let mut namespaces = BTreeMap::<&'static str, Vec<String>>::new();
     let mut classes = String::from(include_str!("base/client.ts"));
 
