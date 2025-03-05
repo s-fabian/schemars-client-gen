@@ -3,6 +3,7 @@ use std::{collections::BTreeMap, error::Error as StdError};
 use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
 
 use crate::{
+    keywords::KEYWORDS,
     types::{Kind, RequestInfo, Requests},
     Deprecated,
 };
@@ -432,7 +433,18 @@ export namespace client {{
         &namespaces
             .iter()
             .map(|(tag, res)| {
-                let mut s = format!("export namespace {tag} {{\n");
+                let mut s = if KEYWORDS.contains(tag) {
+                    let tag = format!(
+                        "n{}{}",
+                        tag.chars().next().unwrap().to_uppercase(),
+                        tag.chars().skip(1).collect::<String>()
+                    );
+
+                    format!("export namespace {tag} {{\n")
+                } else {
+                    format!("export namespace {tag} {{\n")
+                };
+
                 s.push_str(&res.join("\n"));
                 s.push_str("\n}");
                 s

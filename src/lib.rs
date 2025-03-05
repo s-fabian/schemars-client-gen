@@ -3,6 +3,7 @@ mod deprecated;
 mod gen;
 mod method;
 mod types;
+mod keywords;
 
 pub use deprecated::Deprecated;
 #[cfg(feature = "client-gen")]
