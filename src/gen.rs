@@ -42,6 +42,20 @@ fn format_js(js: &str) -> Result<String, Box<dyn StdError>> {
     schemars_to_zod::pretty::format_js(js, "client.ts", &config)
 }
 
+fn namespace_name(tag: &str) -> String {
+    if KEYWORDS.contains(&tag) {
+        let tag = format!(
+            "n{}{}",
+            tag.chars().next().unwrap().to_uppercase(),
+            tag.chars().skip(1).collect::<String>()
+        );
+
+        tag
+    } else {
+        String::from(tag)
+    }
+}
+
 pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdError>> {
     let requests: Vec<RequestInfo> =
         requests.into_iter().filter(|r| r.add_to_client).collect();
@@ -238,9 +252,17 @@ export namespace client {{
             let new =
                 make_name_raw(method.to_string(), path.to_string(), tag.to_string());
 
-            s.push_str(&format!(
-                "    /** @deprecated Please use {{@link {new}}} instead */\n",
-            ));
+            if tag != &v.tag {
+                let tag = namespace_name(tag);
+
+                s.push_str(&format!(
+                    "    /** @deprecated Please use {{@link {tag}.{new}}} instead */\n",
+                ));
+            } else {
+                s.push_str(&format!(
+                    "    /** @deprecated Please use {{@link {new}}} instead */\n",
+                ));
+            }
         } else if matches!(&v.deprecated, &Deprecated::Simple(true)) {
             s.push_str("    /** @deprecated */\n");
         }
@@ -433,17 +455,8 @@ export namespace client {{
         &namespaces
             .iter()
             .map(|(tag, res)| {
-                let mut s = if KEYWORDS.contains(tag) {
-                    let tag = format!(
-                        "n{}{}",
-                        tag.chars().next().unwrap().to_uppercase(),
-                        tag.chars().skip(1).collect::<String>()
-                    );
-
-                    format!("export namespace {tag} {{\n")
-                } else {
-                    format!("export namespace {tag} {{\n")
-                };
+                let tag = namespace_name(tag);
+                let mut s = format!("export namespace {tag} {{\n");
 
                 s.push_str(&res.join("\n"));
                 s.push_str("\n}");
