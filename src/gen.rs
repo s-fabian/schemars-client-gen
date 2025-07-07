@@ -72,7 +72,7 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
     }
 
     if requests.iter().any(|r| r.res_body.is_sse()) {
-        imports.push_str("import { EventSourcePolyfill } from 'event-source-polyfill';\n");
+        imports.push_str("import { EventSourcePolyfill, type EventSourcePolyfillInit } from 'event-source-polyfill';\n");
         classes.push_str(sse);
     }
 
@@ -298,7 +298,7 @@ export namespace client {{
         return new SSE(
             () => new EventSourcePolyfill(
                 `${{url}}{path}{params_suffix}`,
-                {{ ...options.globalInit, withCredentials: true }}
+                {{ ...(options.globalInit as EventSourcePolyfillInit), withCredentials: true }}
             ),
             (data) => options.unsafe ? data as {struct_name}Msg : {name}Msg.parse(data),
         )
