@@ -1,6 +1,6 @@
 class SSE<Message> {
     public open = false;
-    public sse: EventSource;
+    public sse: Pick<EventSource, 'addEventListener'>;
     private messageHandler: ((ev: MessageEvent) => void) | null = null;
     private closeHandler: ((ev: Event) => void) | null = null;
 

@@ -62,6 +62,7 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
 
     let mut namespaces = BTreeMap::<&'static str, Vec<String>>::new();
     let mut classes = String::from(include_str!("base/client.ts"));
+    let mut imports = String::from("import { z } from 'zod';\n");
 
     let ws = include_str!("base/websocket.ts");
     let sse = include_str!("base/sse.ts");
@@ -71,12 +72,12 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
     }
 
     if requests.iter().any(|r| r.res_body.is_sse()) {
+        imports.push_str("import { EventSourcePolyfill } from 'event-source-polyfill';\n");
         classes.push_str(sse);
     }
 
     let mut out = format!(
-        r#"import {{ z }} from 'zod';
-
+        r#"{imports}
 export namespace client {{
 
 {classes}
@@ -295,7 +296,7 @@ export namespace client {{
             : options.baseUrl;
 
         return new SSE(
-            () => new EventSource(
+            () => new EventSourcePolyfill(
                 `${{url}}{path}{params_suffix}`,
                 {{ ...options.globalInit, withCredentials: true }}
             ),
