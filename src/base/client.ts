@@ -84,31 +84,20 @@ class PromiseWrapper<T> implements PromiseLike<T> {
         onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null,
         onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
     ): Promise<TResult1 | TResult2> {
-        return new Promise<TResult1 | TResult2>((resolve) => {
-            if (onFulfilled) {
-                this.successCallbacks.push((value) => {
-                    resolve(onFulfilled(value))
-                });
-            }
-
-            if (onRejected) {
-                this.httpFailureCallbacks.push((res) => {
-                    resolve(onRejected(res))
-                });
-                this.networkErrorCallbacks.push((error) => {
-                    resolve(onRejected(error))
-                });
-            }
-        });
+        return this.promise.then(onFulfilled, onRejected)
     }
 
-    constructor(public readonly promise: Promise<Result<T>>) {
+    public readonly promise: Promise<T>
+
+    constructor(promise: Promise<Result<T>>) {
         if (options.onHttpError) {
             this.httpFailureCallbacks.push(options.onHttpError)
         }
         if (options.onNetworkError) {
             this.networkErrorCallbacks.push(options.onNetworkError)
         }
+
+        this.promise = promise.then((res) => res.success ? res.value : Promise.reject(res.response))
 
         promise
             .then(
