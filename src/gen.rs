@@ -89,11 +89,6 @@ export namespace client {{
 
     let config = Config {
         use_coerce_date: Default::default(),
-        array_wrapper: false,
-        explicit_min_max: false,
-        add_descriptions: true,
-        union_first: true,
-        add_default: false,
         ignore_undefined: false,
     };
 
