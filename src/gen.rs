@@ -62,7 +62,7 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
 
     let mut namespaces = BTreeMap::<&'static str, Vec<String>>::new();
     let mut classes = String::from(include_str!("base/client.ts"));
-    let mut imports = String::from("import { z } from 'zod';\n");
+    let mut imports = format!("{}\n", schemars_to_zod::ZOD_IMPORT);
 
     let ws = include_str!("base/websocket.ts");
     let sse = include_str!("base/sse.ts");
