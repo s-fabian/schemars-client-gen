@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, error::Error as StdError};
 
-use schemars_to_zod::{pretty::default_pretty_conf, Config, Parser};
+use schemars_to_zod::{pretty::default_pretty_conf, Config, DateFormat, Parser};
 
 use crate::{
     keywords::KEYWORDS,
@@ -87,22 +87,20 @@ export namespace client {{
 "#
     );
 
-    let config = Config {
-        use_coerce_date: Default::default(),
-        ignore_undefined: false,
-    };
-
     let i_parser = Parser::new(Config {
-        use_coerce_date: false,
-        ..config
+        #[cfg(feature = "keep-datestring")]
+        date_format: DateFormat::IsoStringDate,
+        #[cfg(not(feature = "keep-datestring"))]
+        date_format: DateFormat::CoerceDate,
+        ignore_undefined: false,
     });
+
     let o_parser = Parser::new(Config {
-        use_coerce_date: true,
+        date_format: DateFormat::JsDate,
         #[cfg(feature = "add-undefined")]
         ignore_undefined: false,
         #[cfg(not(feature = "add-undefined"))]
         ignore_undefined: true,
-        ..config
     });
 
     for v in &requests {

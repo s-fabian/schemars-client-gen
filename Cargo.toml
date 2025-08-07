@@ -18,6 +18,7 @@ actix-web = ["dep:actix-web"]
 client-gen = ["dep:schemars-to-zod"]
 binary = ["dep:clap", "dep:serde_json"]
 add-undefined = []
+keep-datestring = []
 
 [patch.crates-io]
 schemars = { git = "https://github.com/s-fabian/schemars" }
