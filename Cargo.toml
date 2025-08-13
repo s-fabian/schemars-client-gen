@@ -16,7 +16,7 @@ serde_json = { version = "1.0", optional = true }
 [features]
 actix-web = ["dep:actix-web"]
 client-gen = ["dep:schemars-to-zod"]
-binary = ["dep:clap", "dep:serde_json"]
+binary = ["dep:clap", "dep:serde_json", "client-gen"]
 add-undefined = []
 keep-datestring = []
 

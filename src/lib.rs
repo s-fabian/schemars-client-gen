@@ -1,15 +1,15 @@
 mod deprecated;
-#[cfg(feature = "client-gen")]
-mod gen;
 mod keywords;
 mod method;
 mod types;
+#[cfg(feature = "client-gen")]
+mod typescript_client;
 
 pub use deprecated::Deprecated;
-#[cfg(feature = "client-gen")]
-pub use gen::generate;
 pub use method::{Method, MethodUnknown};
 pub use types::{generator, Kind, RequestInfo, Requests, Tag};
+#[cfg(feature = "client-gen")]
+pub use typescript_client::generate;
 
 #[cfg(test)]
 mod tests {

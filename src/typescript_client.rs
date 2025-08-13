@@ -281,7 +281,6 @@ export namespace client {{
         };
 
         if v.res_body.is_sse() {
-            // todo!() make https dynamic
             s.push_str(&format!(
                 "{comment}    export function {name}({req_params}): {struct_name}SSE {{
         const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
