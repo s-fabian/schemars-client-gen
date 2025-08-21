@@ -1,16 +1,6 @@
-#[cfg(all(not(feature = "client-gen"), feature = "binary"))]
-fn main() {
-    eprintln!("Feature 'client-gen' is not available");
-}
-
-#[cfg(all(not(feature = "binary"), feature = "client-gen"))]
+#[cfg(not(all(feature = "client-gen", feature = "binary")))]
 fn main() {
     eprintln!("Feature 'binary' is not available");
-}
-
-#[cfg(all(not(feature = "binary"), not(feature = "client-gen")))]
-fn main() {
-    eprintln!("Feature 'binary' and 'client-gen' are not available");
 }
 
 #[cfg(all(feature = "client-gen", feature = "binary"))]
