@@ -88,15 +88,15 @@ export namespace client {{
     );
 
     let i_parser = Parser::new(Config {
-        #[cfg(feature = "keep-datestring")]
-        date_format: DateFormat::IsoStringDate,
-        #[cfg(not(feature = "keep-datestring"))]
-        date_format: DateFormat::CoerceDate,
+        date_format: DateFormat::JsDate,
         ignore_undefined: false,
     });
 
     let o_parser = Parser::new(Config {
-        date_format: DateFormat::JsDate,
+        #[cfg(feature = "keep-datestring")]
+        date_format: DateFormat::IsoStringDate,
+        #[cfg(not(feature = "keep-datestring"))]
+        date_format: DateFormat::CoerceDate,
         #[cfg(feature = "add-undefined")]
         ignore_undefined: false,
         #[cfg(not(feature = "add-undefined"))]
