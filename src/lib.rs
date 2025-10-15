@@ -1,4 +1,5 @@
 mod deprecated;
+#[cfg(feature = "client-gen")]
 mod keywords;
 mod method;
 mod types;

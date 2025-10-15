@@ -62,7 +62,7 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
 
     let mut namespaces = BTreeMap::<&'static str, Vec<String>>::new();
     let mut classes = String::from(include_str!("base/client.ts"));
-    let mut imports = format!("{}\n", schemars_to_zod::ZOD_IMPORT);
+    let imports = format!("{}\n", schemars_to_zod::ZOD_IMPORT);
 
     let ws = include_str!("base/websocket.ts");
     let sse = include_str!("base/sse.ts");
@@ -72,10 +72,10 @@ pub fn generate(Requests { requests }: Requests) -> Result<String, Box<dyn StdEr
     }
 
     if requests.iter().any(|r| r.res_body.is_sse()) {
-        imports.push_str(
-            "import { EventSourcePolyfill, type EventSourcePolyfillInit } from \
-             'event-source-polyfill';\n",
-        );
+        // imports.push_str(
+        //     "import { EventSourcePolyfill, type EventSourcePolyfillInit } from \
+        //      'event-source-polyfill';\n",
+        // );
         classes.push_str(sse);
     }
 
@@ -282,38 +282,46 @@ export namespace client {{
 
         if v.res_body.is_sse() {
             s.push_str(&format!(
-                "{comment}    export function {name}({req_params}): {struct_name}SSE {{
-        const url = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            && 'location' in global
-            ? `${{(global.location as any).protocol}}//${{(global.location as \
-                 any).host}}${{options.baseUrl}}`
-            : options.baseUrl;
-
+                "{comment}    export function {name}({req_params}init: RequestInit = \
+                 {{}}): {struct_name}SSE {{
         return new SSE(
-            () => new EventSourcePolyfill(
-                `${{url}}{path}{params_suffix}`,
-                {{ ...(options.globalInit as EventSourcePolyfillInit), withCredentials: \
-                 true }}
+            () => new EventSauce(
+                new Request(
+                    options.baseUrl + '{path}'{params_suffix},
+                    {{
+                        credentials: 'include',
+                        ...options.globalInit,
+                        ...init,{headers_addition}
+                    }}
+                ),
             ),
             (data) => options.unsafe ? data as {struct_name}Msg : {name}Msg.parse(data),
         )
     }}\n",
-                // where to fetch
-                path = v.path,
-                // make the query string
-                params_suffix = if v.req_params.is_some() {
-                    format!(
-                        "${{makeQuery(options.unsafe ? params as {struct_name}Params : \
-                         {name}ParamsSchema.parse(params))}}"
-                    )
-                } else {
-                    String::new()
-                },
+                // the function name
+                name = name,
                 // the request query parameter
                 req_params = if v.req_params.is_some() {
                     format!("params: {struct_name}Params, ")
                 } else {
                     String::new()
+                },
+                // where to fetch
+                path = v.path,
+                // make the query string
+                params_suffix = if v.req_params.is_some() {
+                    format!(
+                        " + makeQuery(options.unsafe ? params as {struct_name}Params : \
+                         {name}ParamsSchema.parse(params))"
+                    )
+                } else {
+                    String::new()
+                },
+                headers_addition = if v.req_body.is_schema() {
+                    "\nheaders: jsonContentTypeHeader(init.headers as RepresentsHeader, \
+                     options.globalInit.headers as RepresentsHeader),"
+                } else {
+                    ""
                 },
             ));
         } else if v.res_body.is_websocket() {
