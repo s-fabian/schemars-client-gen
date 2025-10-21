@@ -90,6 +90,7 @@ export namespace client {{
     let i_parser = Parser::new(Config {
         date_format: DateFormat::JsDate,
         ignore_undefined: false,
+        prefer_unknown: true,
     });
 
     let o_parser = Parser::new(Config {
@@ -101,6 +102,10 @@ export namespace client {{
         ignore_undefined: false,
         #[cfg(not(feature = "add-undefined"))]
         ignore_undefined: true,
+        #[cfg(feature = "prefer-any")]
+        prefer_unknown: false,
+        #[cfg(not(feature = "prefer-any"))]
+        prefer_unknown: true,
     });
 
     for v in &requests {
