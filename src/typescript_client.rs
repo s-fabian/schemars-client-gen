@@ -88,7 +88,7 @@ export namespace client {{
     );
 
     let i_parser = Parser::new(Config {
-        date_format: DateFormat::JsDate,
+        date_format: DateFormat::DateToJson,
         ignore_undefined: false,
         prefer_unknown: true,
     });
