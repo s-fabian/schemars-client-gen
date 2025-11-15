@@ -87,8 +87,14 @@ export namespace client {{
 "#
     );
 
-    let i_parser = Parser::new(Config {
+    let i_url_parser = Parser::new(Config {
         date_format: DateFormat::DateToJson,
+        ignore_undefined: false,
+        prefer_unknown: true,
+    });
+
+    let i_body_parser = Parser::new(Config {
+        date_format: DateFormat::JsDate,
         ignore_undefined: false,
         prefer_unknown: true,
     });
@@ -123,13 +129,12 @@ export namespace client {{
             },
 
             Kind::Schema(schema) => {
-                let zod =
-                    i_parser
-                        .parse_schema_object(&schema.schema)
-                        .inspect_err(|_| {
-                            #[cfg(feature = "binary")]
-                            eprintln!("Error in client schema generation of: {name}")
-                        })?;
+                let zod = i_url_parser
+                    .parse_schema_object(&schema.schema)
+                    .inspect_err(|_| {
+                        #[cfg(feature = "binary")]
+                        eprintln!("Error in client schema generation of: {name}")
+                    })?;
 
                 s.push_str(&format!("    const {name}ParamsSchema = {};\n", zod));
                 s.push_str(&format!(
@@ -151,13 +156,12 @@ export namespace client {{
             },
 
             Kind::Schema(schema) => {
-                let zod =
-                    i_parser
-                        .parse_schema_object(&schema.schema)
-                        .inspect_err(|_| {
-                            #[cfg(feature = "binary")]
-                            eprintln!("Error in client schema generation of: {name}")
-                        })?;
+                let zod = i_body_parser
+                    .parse_schema_object(&schema.schema)
+                    .inspect_err(|_| {
+                        #[cfg(feature = "binary")]
+                        eprintln!("Error in client schema generation of: {name}")
+                    })?;
                 s.push_str(&format!("    const {name}ReqSchema = {};\n", zod));
                 s.push_str(&format!(
                     "    export type {struct_name}Req = z.input<typeof \
@@ -192,7 +196,7 @@ export namespace client {{
                 client_msg,
                 server_msg,
             } => {
-                let client_msg = i_parser
+                let client_msg = i_body_parser
                     .parse_schema_object(&client_msg.schema)
                     .inspect_err(|_| {
                         #[cfg(feature = "binary")]
