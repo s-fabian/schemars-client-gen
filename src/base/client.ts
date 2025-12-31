@@ -118,7 +118,7 @@ class PromiseWrapper<T> implements PromiseLike<T> {
                 async (e) => {
                     this.isDebug && console.error(e);
 
-                    let error = e instanceof Error ? e : new Error(e);
+                    let error = e instanceof Error ? e : new Error(`${e}`);
 
                     await Promise.all(this.networkErrorCallbacks.map((fn) => run(fn, error)));
                 },
