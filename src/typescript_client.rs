@@ -124,7 +124,7 @@ export namespace client {{
 
             Kind::Any => {
                 s.push_str(&format!(
-                    "    export type {struct_name}Params = Record<string, string>;\n\n"
+                    "    export type {struct_name}Params = URLSearchParams;\n\n"
                 ));
             },
 
@@ -318,7 +318,9 @@ export namespace client {{
                 // where to fetch
                 path = v.path,
                 // make the query string
-                params_suffix = if v.req_params.is_some() {
+                params_suffix = if v.req_params.is_any() {
+                    String::from(" + (params.size ? '?' + params : '')")
+                } else if v.req_params.is_some() {
                     format!(
                         " + makeQuery(options.unsafe ? params as {struct_name}Params : \
                          {name}ParamsSchema.parse(params))"
@@ -365,10 +367,12 @@ export namespace client {{
                 // where to fetch
                 path = v.path,
                 // make the query string
-                params_suffix = if v.req_params.is_some() {
+                params_suffix = if v.req_params.is_any() {
+                    String::from(" + (params.size ? '?' + params : '')")
+                } else if v.req_params.is_some() {
                     format!(
-                        "${{makeQuery(options.unsafe ? params as {struct_name}Params : \
-                         {name}ParamsSchema.parse(params))}}"
+                        " + makeQuery(options.unsafe ? params as {struct_name}Params : \
+                         {name}ParamsSchema.parse(params))"
                     )
                 } else {
                     String::new()
@@ -416,7 +420,9 @@ export namespace client {{
                 // where to fetch
                 path = v.path,
                 // make the query string
-                params_suffix = if v.req_params.is_some() {
+                params_suffix = if v.req_params.is_any() {
+                    String::from(" + (params.size ? '?' + params : '')")
+                } else if v.req_params.is_some() {
                     format!(
                         " + makeQuery(options.unsafe ? params as {struct_name}Params : \
                          {name}ParamsSchema.parse(params))"

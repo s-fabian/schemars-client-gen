@@ -38,6 +38,8 @@ impl Kind {
 
     pub fn is_sse(&self) -> bool { matches!(self, Kind::SSE(_)) }
 
+    pub fn is_any(&self) -> bool { matches!(self, Kind::Any) }
+
     fn replace(&mut self, new: Kind) -> Kind { mem::replace(self, new) }
 
     // fn is_none(&self) -> bool { matches!(self, Kind::None) }
