@@ -1,6 +1,4 @@
 mod deprecated;
-#[cfg(feature = "client-gen")]
-mod keywords;
 mod method;
 mod types;
 #[cfg(feature = "client-gen")]
@@ -12,11 +10,12 @@ pub use types::{generator, Kind, RequestInfo, Requests, Tag};
 #[cfg(feature = "client-gen")]
 pub use typescript_client::generate;
 
+#[cfg(all(test, feature = "client-gen"))]
 #[cfg(test)]
 mod tests {
     use schemars::JsonSchema;
 
-    use crate::{generate, Method, RequestInfo, Requests};
+    use crate::{generate, typescript_client, Method, RequestInfo, Requests};
 
     #[derive(JsonSchema)]
     struct Req {

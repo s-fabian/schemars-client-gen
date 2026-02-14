@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     fmt::{Display, Formatter},
     mem,
 };
@@ -18,6 +19,11 @@ pub enum Kind {
     None,
     Any,
     Schema(RootSchema),
+    Multipart {
+        schema: RootSchema,
+        json_name: Cow<'static, str>,
+        files_name: Cow<'static, str>,
+    },
     Websocket {
         client_msg: RootSchema,
         server_msg: RootSchema,
@@ -29,10 +35,15 @@ impl Kind {
     pub fn is_none(&self) -> bool { matches!(self, Kind::None) }
 
     pub fn is_some(&self) -> bool {
-        matches!(self, Kind::Any | Kind::Schema(_) | Kind::Websocket { .. })
+        matches!(
+            self,
+            Kind::Any | Kind::Schema(_) | Kind::Multipart { .. } | Kind::Websocket { .. }
+        )
     }
 
     pub fn is_schema(&self) -> bool { matches!(self, Kind::Schema(_)) }
+
+    pub fn is_multipart(&self) -> bool { matches!(self, Kind::Multipart { .. }) }
 
     pub fn is_websocket(&self) -> bool { matches!(self, Kind::Websocket { .. }) }
 
@@ -51,6 +62,7 @@ impl Display for Kind {
             Kind::None => "none",
             Kind::Any => "any",
             Kind::Schema(_) => "defined",
+            Kind::Multipart { .. } => "defined multipart",
             Kind::Websocket { .. } => "websocket",
             Kind::SSE(_) => "server side events",
         })
@@ -145,6 +157,24 @@ impl RequestInfo {
             self.req_body.replace(Kind::Schema(res)).is_none(),
             "Request body schema already present"
         );
+
+        self
+    }
+
+    pub fn req_body_multipart(
+        mut self,
+        json_name: impl Into<Cow<'static, str>>,
+        files_name: impl Into<Cow<'static, str>>,
+    ) -> Self {
+        let Kind::Schema(schema) = self.req_body else {
+            panic!("Invalid request body schema for multipart");
+        };
+
+        self.req_body = Kind::Multipart {
+            schema,
+            json_name: json_name.into(),
+            files_name: files_name.into(),
+        };
 
         self
     }
