@@ -26,6 +26,7 @@ impl RequestInfo {
                 new Request(
                     options.baseUrl + '{path}'{params_suffix},
                     {{
+                        method: '{method}',
                         credentials: 'include',
                         ...options.globalInit,
                         ...init,{headers_addition}
@@ -56,6 +57,8 @@ impl RequestInfo {
                 } else {
                     String::new()
                 },
+                // the method for fetching
+                method = self.method,
                 headers_addition = if self.req_body.is_schema() {
                     "\nheaders: jsonContentTypeHeader(init.headers as RepresentsHeader, \
                      options.globalInit.headers as RepresentsHeader),"
@@ -67,12 +70,7 @@ impl RequestInfo {
             write!(
                 buffer,
                 "    export function {name}({req_params}): {struct_name}Websocket {{
-        const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://'
-
-        const wsBaseUrl = (!options.baseUrl || options.baseUrl.startsWith('/'))
-            ? `${{protocol}}${{location.host}}${{options.baseUrl}}`
-            : (protocol + options.baseUrl.replace(/^https:\\/\\//, \
-                 '').replace(/^http:\\/\\//, ''))
+        const wsBaseUrl = new URL(options.baseUrl, typeof location !== 'undefined' ? location.href : undefined);
 
         return new WebsocketWrapper(
             () => new WebSocket(
@@ -222,9 +220,9 @@ impl RequestInfo {
                     Kind::Multipart { .. } => unreachable!(),
                 },
             )?;
-        }
 
-        writeln!(buffer, "{TAB}}}")?;
+            writeln!(buffer, "{TAB}}}")?;
+        }
 
         Ok(())
     }

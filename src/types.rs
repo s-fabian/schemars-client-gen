@@ -235,9 +235,9 @@ impl RequestInfo {
     }
 
     pub fn with_sse<Message: JsonSchema>(mut self) -> Self {
-        if self.method != Method::Get {
-            panic!("RequestInfo with websockets can only be GET requests");
-        }
+        // if self.method != Method::Get {
+        //     panic!("RequestInfo with websockets can only be GET requests");
+        // }
 
         let mut res = generator(settings(true)).into_root_schema_for::<Message>();
         res.schema.metadata = None;
