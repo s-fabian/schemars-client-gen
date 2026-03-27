@@ -78,7 +78,7 @@ impl RequestInfo {
             if self.res_body.is_sse() {
                 write!(
                     buffer,
-                    "    export function {name}({parameters}): {struct_name}SSE {{
+                    "    export function {name}({parameters}): {struct_name}SSE {{{form_data}
         return new SSE(
             () => new EventSauce(
                 new Request(
@@ -99,6 +99,32 @@ impl RequestInfo {
                     name = name,
                     // the request query parameter
                     parameters = parameters.join(", "),
+                    form_data = if let Kind::Multipart {
+                        json_name,
+                        files_name,
+                        ..
+                    } = &self.req_body
+                    {
+                        let mut buffer = String::from("\n");
+
+                        writeln!(buffer, "{TAB}const formData = new FormData();")?;
+
+                        writeln!(
+                            buffer,
+                            r#"{TAB}formData.set({json_name}, new Blob([JSON.stringify(req)], {{ type: 'application/json' }}));"#,
+                            json_name = serde_json::to_string(json_name.as_ref())?,
+                        )?;
+
+                        writeln!(
+                            buffer,
+                            r#"{TAB}files.forEach((l) => formData.append({files_name}, l));"#,
+                            files_name = serde_json::to_string(files_name.as_ref())?,
+                        )?;
+
+                        buffer
+                    } else {
+                        String::new()
+                    },
                     // make the query string
                     params_suffix = if self.req_params.is_any() {
                         String::from(" + (params.size ? '?' + params : '')")
