@@ -24,8 +24,7 @@ impl RequestInfo {
 
                     writeln!(
                         buffer,
-                        "    /** @deprecated Please use {{@link {tag}.{new}}} instead \
-                         */",
+                        "    /** @deprecated Please use {{@link {tag}.{new}}} instead */",
                     )?;
                 } else {
                     writeln!(

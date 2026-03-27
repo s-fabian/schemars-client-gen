@@ -54,23 +54,17 @@ class EventSauce {
     readonly OPEN = 1;
     readonly CLOSED = 2;
 
-    constructor(from: Request) {
+    constructor(request: Request) {
         this.onerror = null;
         this.onmessage = null;
         this.onopen = null;
         this.readyState = this.CONNECTING;
-        this.url = from.url;
+        this.url = request.url;
         this.reconnectAfter = 0;
         this.lastEventId = '';
 
-        const headers = from.headers;
+        const headers = request.headers;
         headers.set('Accept', 'text/event-stream');
-
-        const request = new Request(from, {
-            method: 'GET',
-            body: null,
-            headers,
-        });
 
         options.fetch(request)
             .then(async (res) => {
@@ -93,17 +87,20 @@ class EventSauce {
 
                 const textStream = res.body;
                 const reader = textStream.getReader();
+                const decoder = new TextDecoder();
 
                 try {
                     let buffer = '';
                     for (; ;) {
                         const {done, value} = await reader.read();
                         if (done) break;
-                        const chunk = new TextDecoder().decode(value);
+                        const chunk = decoder.decode(value, {
+                            stream: true
+                        });
                         buffer += chunk;
 
-                        const index = buffer.indexOf('\n\n');
-                        if (index !== -1) {
+                        let index: number;
+                        while ((index = buffer.indexOf('\n\n')) !== -1) {
                             const packet = buffer.slice(0, index);
                             buffer = buffer.slice(index + 2);
 

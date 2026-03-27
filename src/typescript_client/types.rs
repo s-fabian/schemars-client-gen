@@ -162,22 +162,14 @@ impl RequestInfo {
                         eprintln!("Error in websocket server generation of: {name}")
                     })?;
 
-                writeln!(
-                    buffer,
-                    "    const {name}ClientMsgSchema = {};",
-                    client_msg
-                )?;
+                writeln!(buffer, "    const {name}ClientMsgSchema = {};", client_msg)?;
                 writeln!(
                     buffer,
                     "    export type {struct_name}ClientMsg = z.output<typeof \
                      {name}ClientMsgSchema>;"
                 )?;
 
-                writeln!(
-                    buffer,
-                    "    const {name}ServerMsgSchema = {};",
-                    server_msg
-                )?;
+                writeln!(buffer, "    const {name}ServerMsgSchema = {};", server_msg)?;
                 writeln!(
                     buffer,
                     "    export type {struct_name}ServerMsg = z.output<typeof \
@@ -187,8 +179,7 @@ impl RequestInfo {
                 writeln!(
                     buffer,
                     "    export type {struct_name}Websocket = \
-                     WebsocketWrapper<{struct_name}ClientMsg, \
-                     {struct_name}ServerMsg>;\n"
+                     WebsocketWrapper<{struct_name}ClientMsg, {struct_name}ServerMsg>;\n"
                 )?;
             },
             Kind::SSE(schema) => {

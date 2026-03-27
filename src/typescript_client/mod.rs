@@ -98,8 +98,6 @@ export namespace client {{
         v.append_req_params_type(&name, &mut s)?;
         v.append_req_body_type(&name, &mut s)?;
         v.append_res_body_type(&name, &mut s)?;
-        v.append_deprecation(&name, &mut s)?;
-        v.append_error_codes(&name, &mut s)?;
         v.append_function(&name, &mut s)?;
 
         namespaces.entry(&v.tag).or_default().push(s);
